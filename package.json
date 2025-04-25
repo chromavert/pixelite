@@ -19,9 +19,8 @@
     "vitest": "^3.1.2"
   },
   "scripts": {
-    "format": "prettier --write .",
-    "test": "vitest --watch",
-    "test:browser": "vitest --browser",
-    "test:node": "vitest --node"
+    "dev": "vitest --watch",
+    "test": "vitest",
+    "format": "prettier --write ."
   }
 }

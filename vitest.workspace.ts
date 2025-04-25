@@ -5,36 +5,21 @@ export default defineWorkspace([
   {
     test: {
       ...baseConfig.test,
-      name: 'shared',
-      environment: 'happy-dom',
-      include: ['test/**/*.{test,spec}.ts'],
-    },
-  },
-  {
-    test: {
-      ...baseConfig.test,
       name: 'node',
       environment: 'node',
-      include: [
-        'test/node/**/*.{test,spec}.ts',
-        'test/**/*.node.{test,spec}.ts',
-      ],
+      include: ['test/**/*.node.test.ts'],
     },
   },
   {
     test: {
       ...baseConfig.test,
       name: 'browser',
-      include: [
-        'test/browser/**/*.{test,spec}.ts',
-        'test/**/*.browser.{test,spec}.ts',
-      ],
+      include: ['test/**/*.browser.test.ts'],
       browser: {
         provider: 'playwright',
         enabled: true,
-        headless: true,
         screenshotFailures: false,
-        instances: [{ browser: 'chromium' }],
+        instances: [{ browser: 'chromium', headless: true }],
       },
     },
   },

@@ -47,7 +47,7 @@ async function loadImageFromSource(src: string | URL): Promise<ImageBitmap> {
 }
 
 async function getImageBitmap(
-  src: string | URL | File | Blob | ImageBitmapSource,
+  src: string | URL | File | Blob | ImageBitmapSource | SVGElement,
 ): Promise<ImageBitmap> {
   if (isStringOrURL(src)) {
     return loadImageFromSource(src);

@@ -1,0 +1,31 @@
+import { describe, expect, it } from 'vitest';
+
+import { pixelift } from '../src';
+
+describe('Decode (Client)', () => {
+  it('should be a function', () => {
+    expect(typeof pixelift).toBe('function');
+  });
+
+  it('should throw an error if no input is provided', async () => {
+    // @ts-expect-error
+    await expect(pixelift()).rejects.toThrowError();
+  });
+
+  it('should throw an error if input is not valid', async () => {
+    // @ts-expect-error
+    await expect(pixelift({})).rejects.toThrowError();
+  });
+
+  const formats = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif'] as const;
+
+  for (const format of formats) {
+    it(`should decode a ${format} image from a URL`, async () => {
+      const url = new URL(`./assets/test.${format}`, import.meta.url);
+      const { data, width, height } = await pixelift(url);
+      expect(width).toBeDefined();
+      expect(height).toBeDefined();
+      expect(data.filter(Boolean).length).toBeGreaterThan(0);
+    });
+  }
+});
