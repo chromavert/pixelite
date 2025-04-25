@@ -1,5 +1,3 @@
-// pixelUtils.ts
-
 /**
  * Converts 32-bit ARGB integers to RGBA bytes.
  *
@@ -8,9 +6,9 @@
  * @example
  * packPixels([0xFFFF0000]) // Uint8ClampedArray [255, 0, 0, 255]
  */
-export function packPixels(pixels: readonly number[]): Uint8ClampedArray {
+export function packPixels(pixels: readonly number[]): Uint8Array {
   const length = pixels.length;
-  const output = new Uint8ClampedArray(length * 4);
+  const output = new Uint8Array(length * 4);
   for (let i = 0, o = 0; i < length; i++, o += 4) {
     const px = pixels[i]! >>> 0; // ensure u32
     output[o] = (px >>> 16) & 0xff;
@@ -34,7 +32,7 @@ export function packPixels(pixels: readonly number[]): Uint8ClampedArray {
  * unpackPixels(new Uint8Array([255, 0, 0])); // [0xFFFF0000] (opaque red)
  */
 export function unpackPixels(
-  buffer: ArrayBuffer | ArrayBufferView,
+  buffer: ArrayBuffer | ArrayBufferView | Buffer | Uint8Array | Uint8ClampedArray,
   pixelSize: 3 | 4 = 4,
 ): number[] {
   const bytes =

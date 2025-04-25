@@ -1,14 +1,13 @@
 {
   "name": "@chromavert/pixelite",
+  "version": "0.0.1",
   "description": "A universal TypeScript library for image processing that works seamlessly in both Node.js and browser environments with SSR support.",
-  "version": "0.0.0",
-  "author": "Chromavert",
-  "license": "MIT",
   "type": "module",
   "private": false,
+  "license": "MIT",
+  "author": "Maikel Eckelboom",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
-  "types": "dist/index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/index.js",
@@ -24,11 +23,17 @@
   "engines": {
     "node": ">=18"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "dev": "vitest --watch",
     "test": "vitest",
     "format": "prettier --write .",
-    "build": "tsup"
+    "build": "tsup",
+    "prepare": "bun run build",
+    "prepublishOnly": "bun test && bun run build",
+    "publish": "bun publish --access public"
   },
   "keywords": [
     "image",
@@ -40,10 +45,11 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/maikeleckelboom/chromavert-pixelite.git"
+    "url": "git+https://github.com/chromavert/pixelite.git"
   },
+  "homepage": "https://github.com/chromavert/pixelite#readme",
   "bugs": {
-    "url": "https://github.com/maikeleckelboom/chromavert-pixelite/issues"
+    "url": "https://github.com/chromavert/pixelite/issues"
   },
   "devDependencies": {
     "@types/bun": "latest",

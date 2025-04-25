@@ -16,7 +16,7 @@ Key features:
 - **Error handling**: Robust error classes (`PixeliteError`, `PixeliteDecodeError`, etc.) with clear codes and stack traces.
 - **Environment detection**: Automatically adapts to browser vs. server contexts, including build‑time SSR.
 - **Pure TypeScript**: Strong typings for pixel data and sources, with built‑in guard utilities.
-- **Optional dependencies**: Sharp is optional on install, with fallback to pure‑JS decoding in unsupported environments.
+- **Optional dependencies**: Sharp is optional on installation, so you can use Pixelift in the browser without needing to install it.
 
 ## 📦 Installation
 
