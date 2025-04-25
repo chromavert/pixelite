@@ -1,5 +1,5 @@
 import fs from 'node:fs/promises';
-import type { ServerImageSource } from './types';
+import type { ServerImageSource } from '../types';
 import {
   PixeliteDecodeError,
   PixeliteFileReadError,
@@ -23,7 +23,7 @@ export async function getBuffer(input: ServerImageSource): Promise<Buffer> {
         // Local filesystem path
         return await fs.readFile(input);
       }
-    } catch (err) {
+    } catch (err: unknown) {
       // Distinguish network vs. file errors
       if (/^https?:\/\//i.test(input)) {
         throw new PixeliteNetworkError(

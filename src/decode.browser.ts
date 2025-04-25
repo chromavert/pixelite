@@ -3,8 +3,8 @@ import {
   PixeliteDecodeError,
   PixeliteError,
   PixeliteSourceTypeError,
-} from './errors.ts';
-import { isImageBitmapSource, isStringOrURL } from './utils.ts';
+} from './utils/errors.ts';
+import { isImageBitmapSource, isStringOrURL } from './utils/guards.ts';
 
 /**
  * Creates a canvas context from an ImageBitmap and draws the bitmap onto it
@@ -124,9 +124,6 @@ async function fetchAndDecodeImage(source: string | URL): Promise<ImageBitmap> {
   }
 }
 
-/**
- * Converts various image sources to a standardized ImageBitmap format
- */
 async function normalizeImageSource(
   source: BrowserImageSource,
 ): Promise<ImageBitmap> {

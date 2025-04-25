@@ -1,6 +1,8 @@
-import type { BrowserImageSource, ServerImageSource } from './types';
+import type { BrowserImageSource, ServerImageSource } from '../types';
 
-export function isValidServerInput(input: unknown): input is ServerImageSource {
+export function isServerImageSource(
+  input: unknown,
+): input is ServerImageSource {
   if (typeof input === 'string') return true;
   if (Buffer.isBuffer(input)) return true;
   if (input instanceof ArrayBuffer) return true;
@@ -32,18 +34,18 @@ export function isStringOrURL(src: any): src is string | URL {
   return typeof src === 'string' || src instanceof URL;
 }
 
-export function isValidBrowserInput(
+export function isBrowserImageSource(
   input: unknown,
 ): input is BrowserImageSource {
   return (
-    // primitive strings first
+    // Primitive string
     typeof input === 'string' ||
     // URL class
     input instanceof URL ||
-    // File and Blob (File ⊆ Blob)
+    // File and Blob
     input instanceof File ||
     input instanceof Blob ||
-    // HTML element sources
+    // HTML Elements
     input instanceof HTMLImageElement ||
     input instanceof SVGImageElement ||
     input instanceof HTMLVideoElement ||
@@ -51,10 +53,10 @@ export function isValidBrowserInput(
     // OffscreenCanvas when available
     (typeof OffscreenCanvas !== 'undefined' &&
       input instanceof OffscreenCanvas) ||
-    // bitmap and frame sources
+    // Bitmap and VideoFrame
     input instanceof ImageBitmap ||
     input instanceof VideoFrame ||
-    // raw pixel data
+    // Raw pixel data
     input instanceof ImageData
   );
 }

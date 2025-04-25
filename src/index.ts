@@ -1,6 +1,6 @@
 import type { InputSource, PixelData } from './types';
-import { isServerEnv } from './env.ts';
-import { isValidBrowserInput, isValidServerInput } from './utils.ts';
+import { isRunningInNode } from './utils/env.ts';
+import { isBrowserImageSource, isServerImageSource } from './utils/guards.ts';
 
 /**
  * Processes the input source and decodes it into pixel data. The behavior of the function
@@ -13,9 +13,9 @@ import { isValidBrowserInput, isValidServerInput } from './utils.ts';
  *                              If the input is invalid, it throws an error.
  */
 export async function pixelift(input: InputSource): Promise<PixelData> {
-  if (isServerEnv()) {
+  if (isRunningInNode()) {
     const decoder = await import('./decode.server.ts');
-    if (isValidServerInput(input)) {
+    if (isServerImageSource(input)) {
       return await decoder.decode(input);
     }
     throw new TypeError(
@@ -24,7 +24,7 @@ export async function pixelift(input: InputSource): Promise<PixelData> {
     );
   }
 
-  if (isValidBrowserInput(input)) {
+  if (isBrowserImageSource(input)) {
     const decoder = await import('./decode.browser.ts');
     return await decoder.decode(input);
   }

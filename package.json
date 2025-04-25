@@ -1,26 +1,55 @@
 {
   "name": "pixelift",
   "type": "module",
-  "module": "src/index.ts",
   "private": true,
-  "peerDependencies": {
-    "typescript": "^5"
+  "module": "src/index.ts",
+  "license": "MIT",
+  "scripts": {
+    "dev": "vitest --watch",
+    "test": "vitest",
+    "format": "prettier --write .",
+    "build": "tsup src/index.ts --format esm,cjs --dts --clean"
   },
-  "dependencies": {
-    "playwright": "^1.52.0",
-    "sharp": "^0.34.1"
+  "browser": {
+    "sharp": false
+  },
+  "engines": {
+    "node": ">=18"
   },
   "devDependencies": {
     "@types/bun": "latest",
     "@vitest/browser": "^3.1.2",
-    "happy-dom": "^17.4.4",
+    "playwright": "^1.52.0",
     "prettier": "^3.5.3",
+    "tsup": "^8.4.0",
     "type-fest": "^4.40.0",
     "vitest": "^3.1.2"
   },
-  "scripts": {
-    "dev": "vitest --watch",
-    "test": "vitest",
-    "format": "prettier --write ."
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "optionalDependencies": {
+    "sharp": "^0.34.1"
+  },
+  "peerDependenciesMeta": {
+    "sharp": {
+      "optional": true,
+      "description": "Required for server-side image processing"
+    }
+  },
+  "metadata": {
+    "sharp": {
+      "platforms": [
+        "server"
+      ],
+      "installation": {
+        "requiredEnvironments": [
+          "node"
+        ],
+        "command": "npm install sharp",
+        "troubleshooting": "https://sharp.pixelift.io/install"
+      },
+      "browserWarning": "Sharp is automatically excluded in browser builds"
+    }
   }
 }

@@ -1,6 +1,6 @@
-export function isServerEnv(): boolean {
-  // 1. Build-time SSR flag
-  if (typeof import.meta !== 'undefined' && import.meta.env.SSR === true) {
+export function isRunningInNode(): boolean {
+  // 1. Build-time SSR (eg. Vite, Nuxt)
+  if (typeof import.meta !== 'undefined' && import.meta.env.SSR) {
     return true;
   }
   // 2. Node.js runtime

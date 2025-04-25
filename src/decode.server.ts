@@ -1,5 +1,5 @@
 import type { PixelData, ServerImageSource } from './types';
-import { getBuffer } from './get-buffer.ts';
+import { getBuffer } from './utils/get-buffer.ts';
 
 let sharpPromise: Promise<typeof import('sharp')> | null = null;
 
