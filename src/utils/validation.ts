@@ -1,5 +1,9 @@
 import type { BrowserImageSource, ServerImageSource } from '../types';
 
+export function isStringOrURL(src: any): src is string | URL {
+  return typeof src === 'string' || src instanceof URL;
+}
+
 export function isServerImageSource(
   input: unknown,
 ): input is ServerImageSource {
@@ -30,19 +34,15 @@ export function isImageBitmapSource(src: any): src is ImageBitmapSource {
   );
 }
 
-export function isStringOrURL(src: any): src is string | URL {
-  return typeof src === 'string' || src instanceof URL;
-}
-
 export function isBrowserImageSource(
   input: unknown,
 ): input is BrowserImageSource {
   return (
-    // Primitive string
+    // String
     typeof input === 'string' ||
-    // URL class
+    // URL
     input instanceof URL ||
-    // File and Blob
+    // File or Blob
     input instanceof File ||
     input instanceof Blob ||
     // HTML Elements
@@ -56,7 +56,7 @@ export function isBrowserImageSource(
     // Bitmap and VideoFrame
     input instanceof ImageBitmap ||
     input instanceof VideoFrame ||
-    // Raw pixel data
+    // Raw image data
     input instanceof ImageData
   );
 }

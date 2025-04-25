@@ -2,7 +2,7 @@ export interface PixelData {
   data: Uint8Array;
   width: number;
   height: number;
-  channels: number;
+  channels: 4;
 }
 
 export type BrowserImageSource =

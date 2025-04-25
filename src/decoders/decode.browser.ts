@@ -1,14 +1,11 @@
-import type { BrowserImageSource, PixelData } from './types';
+import type { BrowserImageSource, PixelData } from '../types';
 import {
   PixeliteDecodeError,
   PixeliteError,
   PixeliteSourceTypeError,
-} from './utils/errors.ts';
-import { isImageBitmapSource, isStringOrURL } from './utils/guards.ts';
+} from '../utils/errors.ts';
+import { isImageBitmapSource, isStringOrURL } from '../utils/validation.ts';
 
-/**
- * Creates a canvas context from an ImageBitmap and draws the bitmap onto it
- */
 function createCanvasContextFromBitmap(
   bitmap: ImageBitmap,
 ): OffscreenCanvasRenderingContext2D {
@@ -23,9 +20,6 @@ function createCanvasContextFromBitmap(
   return context;
 }
 
-/**
- * Extracts pixel data from a canvas rendering context
- */
 function extractPixelDataFromContext(
   context: OffscreenCanvasRenderingContext2D,
 ): PixelData {
@@ -46,9 +40,6 @@ function extractPixelDataFromContext(
   };
 }
 
-/**
- * Loads an HTMLImageElement from a source URL
- */
 function loadImageFromURL(sourceURL: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const image = new Image();
@@ -64,9 +55,6 @@ function loadImageFromURL(sourceURL: string): Promise<HTMLImageElement> {
   });
 }
 
-/**
- * Converts an SVG blob to ImageBitmap via temporary image element
- */
 async function convertSVGToBitmap(
   svgBlob: Blob,
   sourceURL: string,
@@ -91,9 +79,6 @@ async function convertSVGToBitmap(
   }
 }
 
-/**
- * Fetches and decodes an image from a URL source
- */
 async function fetchAndDecodeImage(source: string | URL): Promise<ImageBitmap> {
   const sourceURL = source.toString();
   const response = await fetch(sourceURL);
@@ -108,7 +93,6 @@ async function fetchAndDecodeImage(source: string | URL): Promise<ImageBitmap> {
 
   const imageBlob = await response.blob();
 
-  // Handle SVG separately due to special processing requirements
   if (imageBlob.type === 'image/svg+xml' || sourceURL.endsWith('.svg')) {
     return convertSVGToBitmap(imageBlob, sourceURL);
   }

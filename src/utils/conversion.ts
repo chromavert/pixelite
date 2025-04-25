@@ -1,60 +1,72 @@
+// pixelUtils.ts
+
 /**
  * Converts 32-bit ARGB integers to RGBA bytes.
  *
- * @param pixels ARGB colors (0xAARRGGBB)
+ * @param pixels - ARGB colors (0xAARRGGBB)
  * @returns RGBA pixels as bytes [R, G, B, A]
  * @example
  * packPixels([0xFFFF0000]) // Uint8ClampedArray [255, 0, 0, 255]
  */
-export function packPixels(pixels: number[]): Uint8ClampedArray {
-  const result = new Uint8ClampedArray(pixels.length * 4);
-  for (let i = 0; i < pixels.length; i++) {
-    result[i * 4] = (pixels[i]! >> 16) & 0xff;
-    result[i * 4 + 1] = (pixels[i]! >> 8) & 0xff;
-    result[i * 4 + 2] = pixels[i]! & 0xff;
-    result[i * 4 + 3] = (pixels[i]! >> 24) & 0xff;
+export function packPixels(pixels: readonly number[]): Uint8ClampedArray {
+  const length = pixels.length;
+  const output = new Uint8ClampedArray(length * 4);
+  for (let i = 0, o = 0; i < length; i++, o += 4) {
+    const px = pixels[i]! >>> 0; // ensure u32
+    output[o] = (px >>> 16) & 0xff;
+    output[o + 1] = (px >>> 8) & 0xff;
+    output[o + 2] = px & 0xff;
+    output[o + 3] = (px >>> 24) & 0xff;
   }
-  return result;
+  return output;
 }
 
 /**
- * Converts a pixel buffer (RGB/RGBA) to 32-bit ARGB integers. Automatically detects
- * format based on buffer length (RGB if length ÷ 3, RGBA if ÷ 4). RGB pixels become
- * fully opaque (alpha = 0xFF).
+ * Converts a pixel buffer (RGB or RGBA) to 32-bit ARGB integers.
+ * Automatically detects format but can accept explicit pixelSize.
+ * RGB pixels become fully opaque (alpha = 0xFF).
  *
- * @param buffer Input pixel data:
- * - ArrayBuffer: Converted to Uint8Array
- * - RGB: 3 bytes/pixel [R, G, B]
- * - RGBA: 4 bytes/pixel [R, G, B, A]
- * @returns ARGB colors as 32-bit integers (0xAARRGGBB)
- * @throws If buffer length isn't divisible by 3 or 4
+ * @param buffer - Input pixel data (ArrayBuffer or TypedArray)
+ * @param pixelSize - Optional override: 3 (RGB) or 4 (RGBA)
+ * @returns Array of ARGB colors as 32-bit integers (0xAARRGGBB)
+ * @throws If buffer length isn't divisible by pixelSize or format is ambiguous
  * @example
- * unpackPixels(new Uint8Array([255, 0, 0])) // [0xFFFF0000] (opaque red)
+ * unpackPixels(new Uint8Array([255, 0, 0])); // [0xFFFF0000] (opaque red)
  */
 export function unpackPixels(
-  buffer: Uint8Array | Uint8ClampedArray | ArrayBuffer | number[],
+  buffer: ArrayBuffer | ArrayBufferView,
+  pixelSize: 3 | 4 = 4,
 ): number[] {
-  const byteArray =
-    buffer instanceof ArrayBuffer ? new Uint8Array(buffer) : buffer;
+  const bytes =
+    buffer instanceof ArrayBuffer
+      ? new Uint8Array(buffer)
+      : new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength);
 
-  const length = byteArray.length;
-  const pixelSize = length % 4 === 0 ? 4 : 3;
+  const len = bytes.length;
 
-  if (length % pixelSize !== 0) {
-    throw new Error(
-      `Invalid buffer length ${length}: must be a multiple of 3 (RGB) or 4 (RGBA)`,
-    );
+  const size =
+    pixelSize ??
+    (len % 4 === 0 && len % 3 !== 0
+      ? 4
+      : len % 3 === 0 && len % 4 !== 0
+        ? 3
+        : (() => {
+            throw new Error(`Ambiguous buffer length ${len}`);
+          })());
+
+  if (len % size !== 0) {
+    throw new Error(`Invalid buffer length ${len}: not a multiple of ${size}`);
   }
 
-  const pixelCount = length / pixelSize;
-  const result = new Array<number>(pixelCount);
+  const count = len / size;
+  const result: number[] = new Array(count);
 
-  for (let src = 0, dst = 0; src < length; src += pixelSize, dst++) {
-    result[dst] =
-      ((pixelSize === 4 ? byteArray[src + 3]! : 0xff) << 24) |
-      (byteArray[src]! << 16) |
-      (byteArray[src + 1]! << 8) |
-      byteArray[src + 2]!;
+  for (let i = 0, j = 0; i < count; i++, j += size) {
+    const r = bytes[j]! & 0xff;
+    const g = bytes[j + 1]! & 0xff;
+    const b = bytes[j + 2]! & 0xff;
+    const a = size === 4 ? bytes[j + 3]! & 0xff : 0xff;
+    result[i] = (a << 24) | (r << 16) | (g << 8) | b;
   }
 
   return result;

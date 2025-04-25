@@ -1,23 +1,53 @@
 {
-  "name": "pixelift",
-  "type": "module",
-  "private": true,
-  "module": "src/index.ts",
+  "name": "@chromavert/pixelite",
+  "description": "A universal TypeScript library for image processing that works seamlessly in both Node.js and browser environments with SSR support.",
+  "version": "0.0.0",
+  "author": "Chromavert",
   "license": "MIT",
-  "scripts": {
-    "dev": "vitest --watch",
-    "test": "vitest",
-    "format": "prettier --write .",
-    "build": "tsup src/index.ts --format esm,cjs --dts --clean"
+  "type": "module",
+  "private": false,
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
   },
+  "files": [
+    "dist"
+  ],
   "browser": {
     "sharp": false
   },
   "engines": {
     "node": ">=18"
   },
+  "scripts": {
+    "dev": "vitest --watch",
+    "test": "vitest",
+    "format": "prettier --write .",
+    "build": "tsup"
+  },
+  "keywords": [
+    "image",
+    "processing",
+    "sharp",
+    "typescript",
+    "node",
+    "browser"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/maikeleckelboom/chromavert-pixelite.git"
+  },
+  "bugs": {
+    "url": "https://github.com/maikeleckelboom/chromavert-pixelite/issues"
+  },
   "devDependencies": {
     "@types/bun": "latest",
+    "@types/sharp": "^0.32.0",
     "@vitest/browser": "^3.1.2",
     "playwright": "^1.52.0",
     "prettier": "^3.5.3",
@@ -30,12 +60,6 @@
   },
   "optionalDependencies": {
     "sharp": "^0.34.1"
-  },
-  "peerDependenciesMeta": {
-    "sharp": {
-      "optional": true,
-      "description": "Required for server-side image processing"
-    }
   },
   "metadata": {
     "sharp": {

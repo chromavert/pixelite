@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { decode } from '../src/decode.server';
+import { decode } from '../src/decoders/decode.server.ts';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 

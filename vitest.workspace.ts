@@ -5,16 +5,22 @@ export default defineWorkspace([
   {
     test: {
       ...baseConfig.test,
-      name: 'node',
+      name: 'server',
       environment: 'node',
-      include: ['test/**/*.node.test.ts'],
+      include: [
+        'test/**/*.server.{test,spec}.ts',
+        'src/**/*.server.{test,spec}.ts',
+      ],
     },
   },
   {
     test: {
       ...baseConfig.test,
       name: 'browser',
-      include: ['test/**/*.browser.test.ts'],
+      include: [
+        'test/**/*.browser.{test,spec}.ts',
+        'src/**/*.browser.{test,spec}.ts',
+      ],
       browser: {
         provider: 'playwright',
         enabled: true,
@@ -22,8 +28,8 @@ export default defineWorkspace([
         screenshotFailures: false,
         instances: [
           { browser: 'webkit' },
-          // { browser: 'chromium' },
-          // { browser: 'firefox' },
+          { browser: 'chromium' },
+          { browser: 'firefox' },
         ],
       },
     },
