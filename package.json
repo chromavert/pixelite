@@ -1,0 +1,27 @@
+{
+  "name": "pixelift",
+  "type": "module",
+  "module": "src/index.ts",
+  "private": true,
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "playwright": "^1.52.0",
+    "sharp": "^0.34.1"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@vitest/browser": "^3.1.2",
+    "happy-dom": "^17.4.4",
+    "prettier": "^3.5.3",
+    "type-fest": "^4.40.0",
+    "vitest": "^3.1.2"
+  },
+  "scripts": {
+    "format": "prettier --write .",
+    "test": "vitest --watch",
+    "test:browser": "vitest --browser",
+    "test:node": "vitest --node"
+  }
+}
