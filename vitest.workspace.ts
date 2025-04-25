@@ -8,6 +8,7 @@ export default defineWorkspace([
       name: 'server',
       environment: 'node',
       include: [
+        '**/*.server.{test,spec}.ts',
         'test/**/*.server.{test,spec}.ts',
         'src/**/*.server.{test,spec}.ts',
       ],

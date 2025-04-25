@@ -1,4 +1,4 @@
-import type { PixelData, ServerImageSource } from '../types';
+import type { PixelData, PixeliteOptions, ServerImageSource } from '../types';
 import { getBuffer } from '../utils/get-buffer.ts';
 
 let sharpPromise: Promise<typeof import('sharp')> | null = null;
@@ -18,11 +18,21 @@ async function getSharp() {
   return sharpPromise;
 }
 
-export async function decode(input: ServerImageSource): Promise<PixelData> {
+export async function decode(
+  input: ServerImageSource,
+  options: PixeliteOptions = {},
+): Promise<PixelData> {
   const buffer = await getBuffer(input);
   const sharpModule = await getSharp();
-  const sharp = sharpModule.default;
-  const image = sharp(buffer).ensureAlpha().raw();
+  let pipeline = sharpModule.default(buffer).ensureAlpha();
+
+  if (options.width || options.height) {
+    pipeline = pipeline.resize(options.width ?? null, options.height ?? null, {
+      fit: 'fill',
+    });
+  }
+
+  const image = pipeline.raw({ resolveWithObject: true, channels: 4 });
   const { data, info } = await image.toBuffer({ resolveWithObject: true });
 
   return {

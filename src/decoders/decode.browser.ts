@@ -1,4 +1,4 @@
-import type { BrowserImageSource, PixelData } from '../types';
+import type { BrowserImageSource, PixelData, PixeliteOptions } from '../types';
 import {
   PixeliteDecodeError,
   PixeliteError,
@@ -8,15 +8,19 @@ import { isImageBitmapSource, isStringOrURL } from '../utils/validation.ts';
 
 function createCanvasContextFromBitmap(
   bitmap: ImageBitmap,
+  options: PixeliteOptions = {},
 ): OffscreenCanvasRenderingContext2D {
-  const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+  const width = options.width ?? bitmap.width;
+  const height = options.height ?? bitmap.height;
+
+  const canvas = new OffscreenCanvas(width, height);
   const context = canvas.getContext('2d');
 
   if (!context) {
     throw new PixeliteDecodeError('Failed to create 2D rendering context');
   }
 
-  context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  context.drawImage(bitmap, 0, 0, width, height);
   return context;
 }
 
@@ -133,10 +137,11 @@ async function normalizeImageSource(
  */
 export async function decode(
   imageSource: BrowserImageSource,
+  options: PixeliteOptions = {},
 ): Promise<PixelData> {
   try {
     const imageBitmap = await normalizeImageSource(imageSource);
-    const drawingContext = createCanvasContextFromBitmap(imageBitmap);
+    const drawingContext = createCanvasContextFromBitmap(imageBitmap, options);
     return extractPixelDataFromContext(drawingContext);
   } catch (error) {
     if (error instanceof PixeliteError) {
