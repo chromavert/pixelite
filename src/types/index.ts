@@ -1,3 +1,10 @@
+export interface PixelData {
+  data: Uint8Array;
+  width: number;
+  height: number;
+  channels: number;
+}
+
 export type BrowserImageSource =
   | string
   | URL
@@ -26,10 +33,3 @@ export type ServerImageSource =
   | Float64Array;
 
 export type InputSource = BrowserImageSource | ServerImageSource;
-
-export interface PixelData {
-  data: Uint8Array;
-  width: number;
-  height: number;
-  channels: number;
-}

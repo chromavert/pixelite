@@ -1,4 +1,4 @@
-import type { InputSource, PixelData } from './types.ts';
+import type { InputSource, PixelData } from './types';
 import { isServerEnv } from './env.ts';
 import { isValidBrowserInput, isValidServerInput } from './utils.ts';
 

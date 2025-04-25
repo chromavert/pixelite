@@ -1,4 +1,4 @@
-import type { BrowserImageSource, ServerImageSource } from './types.ts';
+import type { BrowserImageSource, ServerImageSource } from './types';
 
 export function isValidServerInput(input: unknown): input is ServerImageSource {
   if (typeof input === 'string') return true;
@@ -13,7 +13,6 @@ export function isValidServerInput(input: unknown): input is ServerImageSource {
   return ArrayBuffer.isView(input) && 'BYTES_PER_ELEMENT' in input.constructor;
 }
 
-/** ImageBitmap-compatible source per MDN. */
 export function isImageBitmapSource(src: any): src is ImageBitmapSource {
   return (
     src instanceof HTMLImageElement ||

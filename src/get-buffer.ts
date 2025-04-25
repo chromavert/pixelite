@@ -1,5 +1,5 @@
 import fs from 'node:fs/promises';
-import type { ServerImageSource } from './types.ts';
+import type { ServerImageSource } from './types';
 import {
   PixeliteDecodeError,
   PixeliteFileReadError,
@@ -8,12 +8,10 @@ import {
 } from './errors.ts';
 
 export async function getBuffer(input: ServerImageSource): Promise<Buffer> {
-  // Already a Buffer
   if (Buffer.isBuffer(input)) {
     return input;
   }
 
-  // String: file path or URL
   if (typeof input === 'string') {
     try {
       if (/^https?:\/\//i.test(input)) {
