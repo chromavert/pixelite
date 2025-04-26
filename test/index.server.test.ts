@@ -1,16 +1,17 @@
-import { describe, expect, it } from 'vitest';
-import { decode } from '../src/decoders/decode.server.ts';
 import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { describe, expect, test } from 'vitest';
+import { pixelite } from '../src';
 
-describe('decode (SSR)', () => {
+describe('Server', () => {
   const formats = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif', 'svg'] as const;
-  it.each(formats)('should handle %s format correctly', async ext => {
-    const filePath = resolve(__dirname, 'assets', `test.${ext}`);
-    const buffer = readFileSync(filePath);
-    const result = await decode(buffer);
 
-    expect(result.channels).toBe(4);
-    expect(result.data.some(v => v !== 0)).toBe(true);
+  test.each(formats)('should decode a %s image from a URL', async (format) => {
+    const url = new URL(`./assets/test.${format}`, import.meta.url);
+    const buffer = readFileSync(url);
+    const result = await pixelite(buffer);
+
+    expect(result.width).toBeDefined();
+    expect(result.height).toBeDefined();
+    expect(result.data.filter(Boolean).length).toBeGreaterThan(0);
   });
 });

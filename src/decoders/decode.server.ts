@@ -24,11 +24,17 @@ export async function decode(
 ): Promise<PixelData> {
   const buffer = await getBuffer(input);
   const sharpModule = await getSharp();
-  let pipeline = sharpModule.default(buffer).ensureAlpha();
+
+  let pipeline = sharpModule
+    .default(buffer)
+    .pipelineColorspace('srgb')
+    .ensureAlpha()
+    .unflatten();
 
   if (options.width || options.height) {
     pipeline = pipeline.resize(options.width ?? null, options.height ?? null, {
       fit: 'fill',
+      kernel: 'nearest',
     });
   }
 

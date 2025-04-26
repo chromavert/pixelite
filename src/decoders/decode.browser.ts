@@ -158,5 +158,6 @@ export async function decode(
       },
       { cause: error as Error },
     );
+  } finally {
   }
 }

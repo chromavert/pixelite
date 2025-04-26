@@ -11,6 +11,7 @@ export default defineWorkspace([
         '**/*.server.{test,spec}.ts',
         'test/**/*.server.{test,spec}.ts',
         'src/**/*.server.{test,spec}.ts',
+        '**/*.universal.{test,spec}.ts',
       ],
     },
   },
@@ -21,6 +22,7 @@ export default defineWorkspace([
       include: [
         'test/**/*.browser.{test,spec}.ts',
         'src/**/*.browser.{test,spec}.ts',
+        '**/*.universal.{test,spec}.ts',
       ],
       browser: {
         provider: 'playwright',
