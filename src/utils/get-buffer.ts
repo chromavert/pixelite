@@ -1,5 +1,5 @@
 import fs from 'node:fs/promises';
-import type { ServerImageSource } from '../types';
+import type { ServerInput } from '../types';
 import {
   PixeliteDecodeError,
   PixeliteFileReadError,
@@ -7,7 +7,7 @@ import {
   PixeliteSourceTypeError,
 } from './errors.ts';
 
-export async function getBuffer(input: ServerImageSource): Promise<Buffer> {
+export async function getBuffer(input: ServerInput): Promise<Buffer> {
   if (Buffer.isBuffer(input)) {
     return input;
   }

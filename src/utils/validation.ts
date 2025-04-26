@@ -1,12 +1,10 @@
-import type { BrowserImageSource, ServerImageSource } from '../types';
+import type { BrowserInput, ServerInput } from '../types';
 
 export function isStringOrURL(src: any): src is string | URL {
   return typeof src === 'string' || src instanceof URL;
 }
 
-export function isServerImageSource(
-  input: unknown,
-): input is ServerImageSource {
+export function isServerImageSource(input: unknown): input is ServerInput {
   if (typeof input === 'string') return true;
   if (Buffer.isBuffer(input)) return true;
   if (input instanceof ArrayBuffer) return true;
@@ -34,29 +32,20 @@ export function isImageBitmapSource(src: any): src is ImageBitmapSource {
   );
 }
 
-export function isBrowserImageSource(
-  input: unknown,
-): input is BrowserImageSource {
+export function isBrowserImageSource(input: unknown): input is BrowserInput {
   return (
-    // String
     typeof input === 'string' ||
-    // URL
     input instanceof URL ||
-    // File or Blob
     input instanceof File ||
     input instanceof Blob ||
-    // HTML Elements
     input instanceof HTMLImageElement ||
     input instanceof SVGImageElement ||
     input instanceof HTMLVideoElement ||
     input instanceof HTMLCanvasElement ||
-    // OffscreenCanvas when available
     (typeof OffscreenCanvas !== 'undefined' &&
       input instanceof OffscreenCanvas) ||
-    // Bitmap and VideoFrame
     input instanceof ImageBitmap ||
     input instanceof VideoFrame ||
-    // Raw image data
     input instanceof ImageData
   );
 }

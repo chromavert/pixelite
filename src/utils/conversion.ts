@@ -25,7 +25,7 @@ export function packPixels(pixels: readonly number[]): Uint8Array {
  * RGB pixels become fully opaque (alpha = 0xFF).
  *
  * @param buffer - Input pixel data (ArrayBuffer or TypedArray)
- * @param pixelSize - Optional override: 3 (RGB) or 4 (RGBA)
+ * @param channels - Optional override: 3 (RGB) or 4 (RGBA)
  * @returns Array of ARGB colors as 32-bit integers (0xAARRGGBB)
  * @throws If buffer length isn't divisible by pixelSize or format is ambiguous
  * @example
@@ -33,7 +33,7 @@ export function packPixels(pixels: readonly number[]): Uint8Array {
  */
 export function unpackPixels(
   buffer: ArrayBuffer | ArrayBufferView | Buffer | Uint8Array | Uint8ClampedArray,
-  pixelSize: 3 | 4 = 4,
+  channels: 3 | 4 = 4,
 ): number[] {
   const bytes =
     buffer instanceof ArrayBuffer
@@ -43,7 +43,7 @@ export function unpackPixels(
   const len = bytes.length;
 
   const size =
-    pixelSize ??
+    channels ??
     (len % 4 === 0 && len % 3 !== 0
       ? 4
       : len % 3 === 0 && len % 4 !== 0

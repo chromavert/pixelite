@@ -1,4 +1,4 @@
-import type { BrowserImageSource, PixelData, PixeliteOptions } from '../types';
+import type { BrowserInput, PixelData, PixeliteOptions } from '../types';
 import {
   PixeliteDecodeError,
   PixeliteError,
@@ -20,6 +20,7 @@ function createCanvasContextFromBitmap(
     throw new PixeliteDecodeError('Failed to create 2D rendering context');
   }
 
+  context.imageSmoothingEnabled = false;
   context.drawImage(bitmap, 0, 0, width, height);
   return context;
 }
@@ -69,7 +70,7 @@ async function convertSVGToBitmap(
     const image = await loadImageFromURL(objectURL);
     const canvas = new OffscreenCanvas(image.width, image.height);
     const context = canvas.getContext('2d')!;
-
+    context.imageSmoothingEnabled = false;
     context.drawImage(image, 0, 0);
     return await createImageBitmap(canvas);
   } catch (error) {
@@ -113,7 +114,7 @@ async function fetchAndDecodeImage(source: string | URL): Promise<ImageBitmap> {
 }
 
 async function normalizeImageSource(
-  source: BrowserImageSource,
+  source: BrowserInput,
 ): Promise<ImageBitmap> {
   if (isStringOrURL(source)) {
     return fetchAndDecodeImage(source);
@@ -136,7 +137,7 @@ async function normalizeImageSource(
  * Main decoder function - converts browser-supported image formats to raw pixel data
  */
 export async function decode(
-  imageSource: BrowserImageSource,
+  imageSource: BrowserInput,
   options: PixeliteOptions = {},
 ): Promise<PixelData> {
   try {

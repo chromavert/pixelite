@@ -1,113 +1,164 @@
-# Pixelift
+## Overview
 
-A universal TypeScript library for image processing that works seamlessly in both Node.js and browser environments with SSR support and optional native acceleration via [Sharp](https://github.com/lovell/sharp).
-
-## 🔍 Overview
-
-**Pixelift** provides a unified API to decode images from a variety of sources—URLs, file paths, buffers, HTML elements, video frames, canvas elements, blobs and more—into raw pixel data (`Uint8Array`) with width, height, and channel information. It automatically detects your runtime environment and dispatches to the appropriate implementation:
-
-- **Browser**: Uses the Canvas API and `createImageBitmap` to extract pixel data.
-- **Server (Node.js)**: Optionally leverages [Sharp](https://github.com/lovell/sharp) for high‑performance, native image decoding and conversion.
+**Pixelite** is a universal TypeScript library for image processing that seamlessly decodes images into raw pixel data in both Node.js and browser environments. Leveraging [`sharp`](https://github.com/lovell/sharp) on the server and native browser APIs, Pixelite supports every major image format (JPEG, PNG, GIF, WebP, AVIF, SVG) under a consistent, promise-based API.
 
 Key features:
 
-- **Multi‑format support**: JPG, PNG, GIF, WebP, AVIF, SVG (and more).
-- **Multiple source types**: Strings, URLs, Files/Blobs, HTMLImageElements, VideoFrames, Canvas, Buffer, ArrayBuffer, TypedArrays.
-- **Error handling**: Robust error classes (`PixeliteError`, `PixeliteDecodeError`, etc.) with clear codes and stack traces.
-- **Environment detection**: Automatically adapts to browser vs. server contexts, including build‑time SSR.
-- **Pure TypeScript**: Strong typings for pixel data and sources, with built‑in guard utilities.
-- **Optional dependencies**: Sharp is optional on installation, so you can use Pixelift in the browser without needing to install it.
+- **Universal API**: Use the same `pixelite()` function in Node.js, browser, or SSR contexts.
+- **Native performance**: Automatically uses `sharp` on the server; 100% web‑native in browsers.
+- **TypeScript first**: Full typings and strict interfaces out of the box.
+- **Flexible resizing**: Optional `width`/`height` parameters with nearest‑neighbor resizing.
+- **Utility functions**: `packPixels`/`unpackPixels` for 32‑bit ARGB ⇄ RGBA conversions.
 
-## 📦 Installation
+## Installation
 
-Install via npm, yarn, pnpm or bun:
+Install via npm or yarn:
 
 ```bash
-# npm
 npm install @chromavert/pixelite
-
-# pnpm
-pnpm add @chromavert/pixelite
-
-# bun
-bun add @chromavert/pixelite
+# or
+yarn add @chromavert/pixelite
 ```
 
-> **Note:** [`sharp`](https://sharp.pixelplumbing.com/) is an optional native dependency that provides high-performance image processing on the server. For Node.js environments, install it with `npm install sharp`. It's automatically excluded from browser builds.
-## 🚀 Quick Start
+> **Note**: On the server, `sharp` is an optional dependency. To enable high‑performance decoding in Node.js, install it:
+>
+```bash
+npm install sharp
+```
+
+## Usage
+
+### Node.js / Server
 
 ```ts
-import { pixelite } from 'pixelite';
+import { pixelite, unpackPixels, packPixels } from '@chromavert/pixelite';
+import fs from 'fs';
 
-async function main() {
-  // Browser: URL, <img>, <canvas>, Blob, etc.
-  const url = 'https://example.com/image.png';
-  const pixelData = await pixelite(url);
-  console.log(pixelData.width, pixelData.height, pixelData.channels);
+async function decodeLocalImage() {
+  // Read a file into a Buffer
+  const buffer = fs.readFileSync('assets/photo.png');
 
-  // Server (Node.js): Buffer, file path, ArrayBuffer
-  const filePath = './assets/photo.jpg';
-  const serverData = await pixelite(filePath);
-  console.log(serverData.data.byteLength);
+  // Decode into raw pixel data
+  const pixelData = await pixelite(buffer, { width: 200, height: 200 });
+
+  console.log(pixelData.width, pixelData.height); // 200 200
+  console.log(pixelData.data.length); // 200 * 200 * 4
+
+  // Convert to 32-bit ARGB integers
+  const argb = unpackPixels(pixelData.data);
+
+  // Convert back to RGBA byte buffer
+  const rgba = packPixels(argb);
 }
-
-main();
 ```
 
-## 📖 API Reference
+### Browser
 
-### `pixelite(input: InputSource): Promise<PixelData>`
+```ts
+import { pixelite } from '@chromavert/pixelite';
 
-Decodes an image or video source into raw pixel data.
+async function decodeFromURL() {
+  const url = new URL('/images/logo.svg', import.meta.url);
+  const { data, width, height, channels } = await pixelite(url, { width: 100 });
 
-- **Parameters**:
-    - `input: InputSource` — one of:
-        - **Browser sources**: `string | URL | File | Blob | HTMLImageElement | HTMLVideoElement | HTMLCanvasElement | OffscreenCanvas | ImageBitmap | VideoFrame | ImageData`
-        - **Server sources**: `string | Buffer | ArrayBuffer | TypedArray`
+  console.log(`Decoded ${width}×${height} with ${channels} channels`);
+  // `data` is a Uint8Array of [R,G,B,A,...]
+}
+```
 
-- **Returns**: `Promise<PixelData>`:
-  ```ts
-  interface PixelData {
-    data: Uint8Array;    // Pixel bytes in RGBA order
-    width: number;       // Pixel width
-    height: number;      // Pixel height
-    channels: number;    // Number of channels (always 4)
-  }
-  ```
+You can also decode `File`, `Blob`, `<canvas>`, `ImageBitmap`, etc.
 
-- **Errors**:
-    - `PixeliteDecodeError` — when decoding fails.
-    - `PixeliteNetworkError` — fetch failures.
-    - `PixeliteFileReadError` — file system read failures.
-    - `PixeliteSourceTypeError` — unsupported input type.
+## API Reference
 
-## 🛠️ Utility Functions
+### `pixelite(input: InputSource, options?: PixeliteOptions): Promise<PixelData>`
 
-- **`packPixels(pixels: number[]): Uint8ClampedArray`** — Convert ARGB 32‑bit ints to RGBA byte array.
-- **`unpackPixels(buffer: Uint8Array | ArrayBuffer | number[]): number[]`** — Convert RGB(A) buffer to 32‑bit ARGB ints.
+- **`input`**: `Buffer | ArrayBuffer | Uint8Array | string | URL | File | Blob | HTMLImageElement | ImageBitmap | OffscreenCanvas | ...`
+- **`options`**:
+    - `width?: number` – target width (nearest‑neighbor).
+    - `height?: number` – target height.
 
-## 🧪 Testing
+**Returns** a `Promise<PixelData>`:
 
-Run tests in watch or CI mode:
+```ts
+interface PixelData {
+  data: Uint8Array; // RGBA bytes
+  width: number;
+  height: number;
+  channels: 4;
+}
+```
+
+Throws a `PixeliteError` (or subclass) on failure:
+
+- `PixeliteDecodeError` for decode or fetch issues.
+- `PixeliteSourceTypeError` for unsupported inputs.
+
+### `unpackPixels(buffer: ArrayBufferView, pixelSize?: 3|4): number[]`
+
+Converts RGBA (or RGB) byte data into 32‑bit ARGB integers.
+
+```ts
+const rgba = new Uint8Array([255,0,0,255]);
+const ints = unpackPixels(rgba); // [0xFFFF0000]
+```
+
+### `packPixels(pixels: number[]): Uint8Array`
+
+Turns 32‑bit ARGB integers back into RGBA bytes.
+
+```ts
+const arr = packPixels([0x80FF00FF]); // Uint8Array [255,0,255,128]
+```
+
+## Examples
+
+#### Resize and Inspect Raw Data
+
+```ts
+import fs from 'fs';
+import { pixelite } from '@chromavert/pixelite';
+
+(async () => {
+  const buf = fs.readFileSync('photo.jpg');
+  const { data, width, height } = await pixelite(buf, { width: 50, height: 50 });
+  console.log(`Buffer length: ${data.length}`);
+  // e.g., Buffer length: 10000
+})();
+```
+
+#### Decode Canvas Element
+
+```html
+<canvas id="myCanvas" width="150" height="150"></canvas>
+<script type="module">
+  import { pixelite } from '@chromavert/pixelite';
+
+  const canvas = document.getElementById('myCanvas');
+  // ... draw something on canvas ...
+
+  const pixelData = await pixelite(canvas);
+  console.log(pixelData);
+</script>
+```
+
+## Testing
+
+This project uses [Vitest](https://vitest.dev/) for unit tests across server and browser:
 
 ```bash
-npm run test
-npm run dev
+npm test
 ```
 
-Browser tests use Playwright under Vitest's browser environment.
+## Contributing
 
-## 🤝 Contributing
-
-Contributions welcome! Please open issues and pull requests on [GitHub](https://github.com/your_username/pixelift).
+Contributions welcome! Please open an issue or PR on [GitHub](https://github.com/chromavert/pixelite).
 
 1. Fork the repo
-2. Create a feature branch (`git checkout -b feat/my-feature`)
-3. Commit your changes (`git commit -m "feat: add ..."`)
-4. Push to your branch (`git push origin feat/my-feature`)
-5. Open a Pull Request
+2. Install dependencies: `npm install`
+3. Run tests: `npm test`
+4. Ensure linting & formatting: `npm run format`
 
-## 📜 License
+## License
 
-This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+MIT © Maikel Eckelboom
 

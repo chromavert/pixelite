@@ -1,22 +1,14 @@
-import type { InputSource, PixelData, PixeliteOptions } from './types';
+import type { PixelData, PixeliteInput, PixeliteOptions } from './types';
 import { isRunningInNode } from './utils/env.ts';
 import {
   isBrowserImageSource,
   isServerImageSource,
 } from './utils/validation.ts';
 
-/**
- * Processes the input source and decodes it into pixel data. The behavior of the function
- * depends on the execution environment (server or browser) and the validity of the input.
- *
- * @param {InputSource} input - The input data to be processed and decoded into pixel data.
- *                             The type and validity of the input are environment-specific.
- * @param options
- * @return {Promise<PixelData>} A promise that resolves to the decoded pixel data if the
- *                              input is valid for the corresponding environment.
- *                              If the input is invalid, it throws an error.
- */
-async function pixelite(input: InputSource, options?:PixeliteOptions): Promise<PixelData> {
+async function pixelite(
+  input: PixeliteInput,
+  options: PixeliteOptions = {},
+): Promise<PixelData> {
   if (isRunningInNode()) {
     const decoder = await import('./decoders/decode.server.ts');
     if (isServerImageSource(input)) {
@@ -44,7 +36,7 @@ export { unpackPixels, packPixels } from './utils/conversion.ts';
 
 export type {
   PixelData,
-  InputSource,
-  ServerImageSource,
-  BrowserImageSource,
+  PixeliteInput,
+  ServerInput,
+  BrowserInput,
 } from './types/index.ts';

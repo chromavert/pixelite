@@ -1,4 +1,4 @@
-export type BrowserImageSource =
+export type BrowserInput =
   | string
   | URL
   | File
@@ -11,7 +11,7 @@ export type BrowserImageSource =
   | Blob
   | ImageData;
 
-export type ServerImageSource =
+export type ServerInput =
   | string
   | Buffer
   | ArrayBuffer
@@ -25,7 +25,7 @@ export type ServerImageSource =
   | Float32Array
   | Float64Array;
 
-export type InputSource = BrowserImageSource | ServerImageSource;
+export type PixeliteInput = BrowserInput | ServerInput;
 
 export interface PixelData {
   data: Uint8Array;
