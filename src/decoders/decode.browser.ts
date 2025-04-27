@@ -1,9 +1,5 @@
 import type { BrowserInput, PixelData, PixeliteOptions } from '../types';
-import {
-  PixeliteDecodeError,
-  PixeliteError,
-  PixeliteSourceTypeError
-} from '../utils/errors.ts';
+import { PixeliteDecodeError, PixeliteSourceTypeError } from '../utils/errors.ts';
 import { isImageBitmapSource, isStringOrURL } from '../utils/validation.ts';
 
 function createCanvasContextFromBitmap(
@@ -13,6 +9,13 @@ function createCanvasContextFromBitmap(
   const width = options.width ?? bitmap.width;
   const height = options.height ?? bitmap.height;
 
+  if (width <= 0 || height <= 0) {
+    throw new PixeliteDecodeError(
+      `Invalid canvas dimensions (width: ${width}, height: ${height})`,
+      { width, height, sourceWidth: bitmap.width, sourceHeight: bitmap.height }
+    );
+  }
+
   const canvas = new OffscreenCanvas(width, height);
   const context = canvas.getContext('2d', {
     alpha: true,
@@ -20,7 +23,10 @@ function createCanvasContextFromBitmap(
   });
 
   if (!context) {
-    throw new PixeliteDecodeError('Failed to create 2D rendering context');
+    throw new PixeliteDecodeError('Failed to create canvas rendering context', {
+      width,
+      height
+    });
   }
 
   context.imageSmoothingEnabled = false;
@@ -29,20 +35,11 @@ function createCanvasContextFromBitmap(
   return context;
 }
 
-function extractPixelDataFromContext(
-  context: OffscreenCanvasRenderingContext2D
-): PixelData {
+function extractPixelDataFromContext(context: OffscreenCanvasRenderingContext2D): ImageData {
   const { width, height } = context.canvas;
-  const imageData = context.getImageData(0, 0, width, height, {
+  return context.getImageData(0, 0, width, height, {
     colorSpace: 'srgb'
   });
-
-  return {
-    data: imageData.data,
-    width,
-    height,
-    channels: 4
-  };
 }
 
 function loadImageFromURL(sourceURL: string): Promise<HTMLImageElement> {
@@ -52,30 +49,51 @@ function loadImageFromURL(sourceURL: string): Promise<HTMLImageElement> {
 
     image.onload = () => resolve(image);
     image.onerror = () => {
-      reject(new PixeliteDecodeError(`Failed to load image from URL: ${sourceURL}`));
+      reject(
+        new PixeliteDecodeError(
+          `Failed to load image from URL`,
+          { sourceURL },
+          { cause: new Error('Check CORS configuration or URL validity') }
+        )
+      );
     };
 
     image.src = sourceURL;
   });
 }
 
-async function convertSVGToBitmap(
-  svgBlob: Blob,
-  sourceURL: string
-): Promise<ImageBitmap> {
+async function convertSVGToBitmap(svgBlob: Blob, sourceURL: string): Promise<ImageBitmap> {
   const objectURL = URL.createObjectURL(svgBlob);
   try {
     const image = await loadImageFromURL(objectURL);
+
+    if (image.width <= 0 || image.height <= 0) {
+      return Promise.reject(
+        new PixeliteDecodeError(
+          `Invalid SVG dimensions (width: ${image.width}, height: ${image.height})`,
+          { sourceURL }
+        )
+      );
+    }
+
     const canvas = new OffscreenCanvas(image.width, image.height);
-    const context = canvas.getContext('2d')!;
+    const context = canvas.getContext('2d');
+    if (!context) {
+      return Promise.reject(
+        new PixeliteDecodeError('Failed to create 2D context for SVG processing', {
+          sourceURL
+        })
+      );
+    }
+
     context.imageSmoothingEnabled = false;
     context.imageSmoothingQuality = 'low';
     context.drawImage(image, 0, 0);
     return await createImageBitmap(canvas);
   } catch (error) {
     throw new PixeliteDecodeError(
-      `Failed to process SVG image from ${sourceURL}`,
-      { sourceURL },
+      `Failed to process SVG image`,
+      { sourceURL, mimeType: 'image/svg+xml' },
       { cause: error as Error }
     );
   } finally {
@@ -89,25 +107,25 @@ async function fetchAndDecodeImage(source: string | URL): Promise<ImageBitmap> {
 
   if (!response.ok) {
     throw new PixeliteDecodeError(
-      `Image fetch failed: ${response.statusText}`,
-      { sourceURL },
-      { cause: new Error(`HTTP ${response.status}`) }
+      `Image fetch failed (HTTP ${response.status})`,
+      { sourceURL, status: response.status },
+      { cause: new Error(response.statusText) }
     );
   }
 
   const imageBlob = await response.blob();
 
-  if (imageBlob.type === 'image/svg+xml' || sourceURL.endsWith('.svg')) {
-    return convertSVGToBitmap(imageBlob, sourceURL);
-  }
-
   try {
+    if (imageBlob.type === 'image/svg+xml' || sourceURL.endsWith('.svg')) {
+      return convertSVGToBitmap(imageBlob, sourceURL);
+    }
+
     return await createImageBitmap(imageBlob);
   } catch (error) {
     throw new PixeliteDecodeError(
-      `Image decoding failed for ${sourceURL}`,
-      { sourceURL },
-      { cause: error  }
+      `Failed to decode ${imageBlob.type || 'unknown'} image`,
+      { sourceURL, mimeType: imageBlob.type },
+      { cause: error as Error }
     );
   }
 }
@@ -118,17 +136,24 @@ async function normalizeImageSource(source: BrowserInput): Promise<ImageBitmap> 
   }
 
   if (source instanceof File || source instanceof Blob || isImageBitmapSource(source)) {
-    return createImageBitmap(source);
+    try {
+      return await createImageBitmap(source);
+    } catch (error) {
+      const sourceType = Object.prototype.toString.call(source);
+      throw new PixeliteDecodeError(
+        `Failed to process image source`,
+        { sourceType },
+        { cause: error as Error }
+      );
+    }
   }
 
-  throw new PixeliteSourceTypeError(
-    `Unsupported image source type: ${Object.prototype.toString.call(source)}`
-  );
+  const sourceType = Object.prototype.toString.call(source);
+  throw new PixeliteSourceTypeError(`Unsupported image source type: ${sourceType}`, {
+    sourceType
+  });
 }
 
-/**
- * Main decoder function - converts browser-supported image formats to raw pixel data
- */
 export async function decode(
   imageSource: BrowserInput,
   options: PixeliteOptions = {}
@@ -136,16 +161,20 @@ export async function decode(
   try {
     const imageBitmap = await normalizeImageSource(imageSource);
     const drawingContext = createCanvasContextFromBitmap(imageBitmap, options);
-    return extractPixelDataFromContext(drawingContext);
-  } catch (error) {
-    if (error instanceof PixeliteError) {
+    const { data, width, height } = extractPixelDataFromContext(drawingContext);
+    return { data, width, height, channels: 4 };
+  } catch (error: unknown) {
+    if (error instanceof PixeliteDecodeError) {
       throw error;
     }
+
+    const sourceType = Object.prototype.toString.call(imageSource);
+    const sourceDetails = isStringOrURL(imageSource) ? { source: imageSource.toString() } : {};
+
     throw new PixeliteDecodeError(
-      `Image processing failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      {},
-      { cause: error }
+      `Image processing failed`,
+      { ...sourceDetails, sourceType },
+      { cause: error as Error }
     );
-  } finally {
   }
 }

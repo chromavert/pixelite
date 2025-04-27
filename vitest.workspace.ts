@@ -22,11 +22,7 @@ export default defineWorkspace([
         enabled: true,
         headless: true,
         screenshotFailures: false,
-        instances: [
-          { browser: 'webkit' },
-          { browser: 'chromium' },
-          { browser: 'firefox' }
-        ]
+        instances: [{ browser: 'webkit' }, { browser: 'chromium' }, { browser: 'firefox' }]
       }
     }
   }

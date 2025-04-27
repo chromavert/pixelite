@@ -1,19 +1,8 @@
-export type BrowserInput =
-  | string
-  | URL
-  | File
-  | HTMLOrSVGImageElement
-  | HTMLVideoElement
-  | HTMLCanvasElement
-  | ImageBitmap
-  | OffscreenCanvas
-  | VideoFrame
-  | Blob
-  | ImageData;
+export type BrowserInput = string | URL | File | ImageBitmapSource;
 
-export type BufferInput = Buffer | BufferSource;
+export type BinaryData = Buffer | BufferSource;
 
-export type ServerInput = string | BufferInput;
+export type ServerInput = string | BinaryData;
 
 export type PixeliteInput = BrowserInput | ServerInput;
 

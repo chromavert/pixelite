@@ -10,9 +10,7 @@ describe('packPixels', () => {
 
   it('handles multiple pixels', () => {
     const input = [0x11223344, 0xaabbccdd];
-    const expected = new Uint8ClampedArray([
-      0x22, 0x33, 0x44, 0x11, 0xbb, 0xcc, 0xdd, 0xaa
-    ]);
+    const expected = new Uint8ClampedArray([0x22, 0x33, 0x44, 0x11, 0xbb, 0xcc, 0xdd, 0xaa]);
     expect(packPixels(input)).toEqual(expected);
   });
 
@@ -74,9 +72,7 @@ describe('unpackPixels', () => {
 
   it('throws error when bytesPerPixel is specified and length is invalid', () => {
     const input = new Uint8Array(7);
-    expect(() => unpackPixels(input, { bytesPerPixel: 4 })).toThrow(
-      'not a multiple of 4'
-    );
+    expect(() => unpackPixels(input, { bytesPerPixel: 4 })).toThrow('not a multiple of 4');
   });
 });
 
@@ -141,7 +137,10 @@ describe('Round-trip conversions', () => {
   });
 });
 
-function assertArrayType(array: any, type: 'number[]' | 'Uint32Array'): asserts array is number[] | Uint32Array {
+function assertArrayType(
+  array: any,
+  type: 'number[]' | 'Uint32Array'
+): asserts array is number[] | Uint32Array {
   if (type === 'number[]') {
     expect(Array.isArray(array)).toBe(true);
     expect(array.every((item: unknown) => typeof item === 'number')).toBe(true);

@@ -1,9 +1,8 @@
-export function isRunningInNode(): boolean {
+export function isNodeEnvironment(): boolean {
   // 1. Build-time check for bundle environments
   if (typeof process !== 'undefined' && process.versions?.vite != null) {
     return true;
   }
-
   // 2. Node.js runtime
   if (typeof process !== 'undefined' && process.versions?.node != null) {
     return true;
