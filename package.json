@@ -31,9 +31,9 @@
     "test": "vitest",
     "format": "prettier --write .",
     "build": "tsup",
-    "prepare": "bun run build",
-    "prepublishOnly": "bun test && bun run build",
-    "publish": "bun publish --access public"
+    "prepare": "npm run build",
+    "prepublishOnly": "npm test && npm run build",
+    "publish": "npm publish --access public"
   },
   "keywords": [
     "image",

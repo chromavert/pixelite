@@ -17,155 +17,150 @@ Key features:
 
 ## Installation
 
-Install via npm or yarn:
+Install Pixelift via npm:
 
 ```bash
 npm install pixelift
-# or
-yarn add pixelift
 ```
 
-> **Note**: On the server, `sharp` is an optional dependency. To enable high‑performance decoding in Node.js, install
-> it:
+For Node.js server-side processing, install `sharp` as an optional dependency:
 
 ```bash
 npm install sharp
 ```
 
-## Usage
+## Examples
 
-### Node.js / Server
+## For Browser Usage
 
-```ts
-import { pixelift, unpackPixels, packPixels } from 'pixelift';
-import fs from 'fs';
-
-async function decodeLocalImage() {
-  // Read a file into a Buffer
-  const buffer = fs.readFileSync('assets/photo.png');
-
-  // Decode into raw pixel data
-  const pixelData = await pixelift(buffer, { width: 200, height: 200 });
-
-  console.log(pixelData.width, pixelData.height); // 200 200
-  console.log(pixelData.data.length); // 200 * 200 * 4
-
-  // Convert to 32-bit ARGB integers
-  const argb = unpackPixels(pixelData.data);
-
-  // Convert back to RGBA byte buffer
-  const rgba = packPixels(argb);
-}
-```
-
-### Browser
-
-```ts
+```javascript
 import { pixelift } from 'pixelift';
 
-async function decodeFromURL() {
-  const url = new URL('/images/logo.svg', import.meta.url);
-  const { data, width, height, channels } = await pixelift(url, { width: 100 });
-
-  console.log(`Decoded ${width}×${height} with ${channels} channels`);
-  // `data` is a Uint8Array of [R,G,B,A,...]
-}
+const pixelData = await pixelift('https://example.com/image.png');
 ```
 
-You can also decode `File`, `Blob`, `<canvas>`, `ImageBitmap`, etc.
-
-## API Reference
-
-### `pixelift(input: InputSource, options?: pixeliftOptions): Promise<PixelData>`
-
-- **`input`**:
-  `Buffer | ArrayBuffer | Uint8Array | string | URL | File | Blob | HTMLImageElement | ImageBitmap | OffscreenCanvas | ...`
-- **`options`**:
-    - `width?: number` – target width (nearest‑neighbor).
-    - `height?: number` – target height.
-
-**Returns** a `Promise<PixelData>`:
+## Data Structure
 
 ```ts
 interface PixelData {
-  data: Uint8ClampedArray;
-  width: number;
-  height: number;
-  channels: 4;
+  data: Uint8ClampedArray,  // Pixel values (type depends on normalize option)
+  width: number,            // Image width in pixels
+  height: number            // Image height in pixels
+  channels: 4               // Number of color channels
 }
 ```
 
-Throws a `pixeliftError` (or subclass) on failure:
+## Conversion Utilities
 
-- `pixeliftDecodeError` for decode or fetch issues.
-- `pixeliftSourceTypeError` for unsupported inputs.
-
-### `unpackPixels(buffer: ArrayBufferView, pixelSize?: 3|4): number[]`
-
-Converts RGBA (or RGB) byte data into 32‑bit ARGB integers.
+### Do some pixel manipulation using the `unpackPixels` and `packPixels` functions.
 
 ```ts
-const rgba = new Uint8Array([255, 0, 0, 255]);
-const ints = unpackPixels(rgba); // [0xFFFF0000]
+import { unpackPixels, packPixels } from 'pixelift';
+
+// Convert pixel data to ARGB integers
+const colors = unpackPixels(pixels.data);
+
+// Modify pixels (example: add red tint)
+const modified = colors.map(color => color | 0xffff0000);
+
+// Convert back to Uint8ClampedArray
+const modifiedData = packPixels(modified);
 ```
 
-### `packPixels(pixels: number[]): Uint8Array`
-
-Turns 32‑bit ARGB integers back into RGBA bytes.
+### Inverting Colors
 
 ```ts
-const arr = packPixels([0x80ff00ff]); // Uint8Array [255,0,255,128]
-```
+import { unpackPixels, packPixels } from 'pixelift';
 
-## Examples
+// Convert pixel data to ARGB integers
+const colors = unpackPixels(pixels.data);
 
-#### Resize and Inspect Raw Data
+// Invert the colors for each pixel
+const invertedColors = colors.map(color => {
+  const a = (color >> 24) & 0xff;
+  const r = (color >> 16) & 0xff;
+  const g = (color >> 8) & 0xff;
+  const b = color & 0xff;
 
-```ts
-import fs from 'fs';
-import { pixelift } from 'pixelift';
+  // Invert RGB channels while preserving the original alpha channel
+  const invR = 255 - r;
+  const invG = 255 - g;
+  const invB = 255 - b;
 
-const buf = fs.readFileSync('photo.jpg');
-const { data, width, height } = await pixelift(buf, {
-  width: 50,
-  height: 50
+  return (a << 24) | (invR << 16) | (invG << 8) | invB;
 });
-console.log(`Buffer length: ${data.length}`);
+
+// Convert back to Uint8ClampedArray
+const invertedData = packPixels(invertedColors);
 ```
 
-#### Decode Canvas Element
+### Canvas Integration Browser
 
 ```html
-
-<canvas id="myCanvas" width="150" height="150"></canvas>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Canvas Example</title>
+</head>
+<body>
+<canvas id="canvas"></canvas>
 <script type="module">
   import { pixelift } from 'pixelift';
 
-  const canvas = document.getElementById('myCanvas');
-  // ... draw something on canvas ...
-
-  const pixelData = await pixelift(canvas);
-  console.log(pixelData);
+  const imageUrl = 'path/to/image.jpg';
+  const { data, width, height } = await pixelift(imageUrl);
+  const canvas = document.getElementById('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext('2d');
+  const imageData = new ImageData(data, width, height);
+  ctx.putImageData(imageData, 0, 0);
 </script>
+</body>
+</html>
 ```
 
-## Testing
+## API Reference
 
-This project uses [Vitest](https://vitest.dev/) for unit tests across server and browser:
+### `pixelift(input: PixeliftInput, options?: PixeliftOptions): Promise<PixelData>`
 
-```bash
-npm test
-```
+Decodes an image into raw pixel data.
+
+- **Parameters:**
+    - `input`: Image source (string, URL, File, Blob, Buffer, etc.)
+    - `options` (optional):
+        - `width?: number` - Target width
+        - `height?: number` - Target height
+- **Returns:** `Promise<PixelData>`
+
+    ```typescript
+    interface PixelData {
+      data: Uint8ClampedArray;
+      width: number;
+      height: number;
+      channels: 4;
+    }
+    ```
+
+### `unpackPixels(buffer: BinaryData, options?: { bytesPerPixel?: 3 | 4; useTArray?: boolean }): number[] | Uint32Array`
+
+Converts raw pixel data into an array of 32-bit ARGB integers.
+
+### `packPixels(pixels: ArrayLike<number>): Uint8ClampedArray`
+
+Converts an array of 32-bit ARGB integers back into raw pixel data.
 
 ## Contributing
 
-Contributions welcome! Please open an issue or PR on [GitHub](https://github.com/chromavert/pixelift).
+Contributions are welcome! Please:
 
-1. Fork the repo
-2. Install dependencies: `npm install`
-3. Run tests: `npm test`
-4. Ensure linting & formatting: `npm run format`
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/new-feature`)
+3. Commit your changes (`git commit -am 'Add new feature'`)
+4. Push to the branch (`git push origin feature/new-feature`)
+5. Submit a Pull Request
 
 ## License
 
-MIT © Maikel Eckelboom
+Pixelift is released under the MIT License. See the LICENSE file for details.
