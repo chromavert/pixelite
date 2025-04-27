@@ -7,23 +7,16 @@ export default defineWorkspace([
       ...baseConfig.test,
       name: 'server',
       environment: 'node',
-      include: [
-        '**/*.server.{test,spec}.ts',
-        'test/**/*.server.{test,spec}.ts',
-        'src/**/*.server.{test,spec}.ts',
-        '**/*.universal.{test,spec}.ts'
-      ]
+      include: ['**/*.server.test.ts', '**/*.test.ts'],
+      exclude: ['**/*.browser.test.ts']
     }
   },
   {
     test: {
       ...baseConfig.test,
       name: 'browser',
-      include: [
-        'test/**/*.browser.{test,spec}.ts',
-        'src/**/*.browser.{test,spec}.ts',
-        '**/*.universal.{test,spec}.ts'
-      ],
+      include: ['**/*.browser.test.ts', '**/*.test.ts'],
+      exclude: ['**/*.server.test.ts'],
       browser: {
         provider: 'playwright',
         enabled: true,
@@ -32,9 +25,7 @@ export default defineWorkspace([
         instances: [
           { browser: 'webkit' },
           { browser: 'chromium' },
-          {
-            browser: 'firefox'
-          }
+          { browser: 'firefox' }
         ]
       }
     }

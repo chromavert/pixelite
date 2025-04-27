@@ -1,10 +1,11 @@
 import type { BufferInput } from '../types';
 
 /**
- * Converts 32-bit ARGB integers to a clamped RGBA byte buffer.
+ * Converts an array of pixel values in ARGB format into a Uint8ClampedArray,
+ * where each pixel is expanded into four separate channels: red, green, blue, and alpha.
  *
- * @param pixels  Array-like of 0xAARRGGBB words
- * @returns       Uint8ClampedArray of [R, G, B, A, …]
+ * @param {ArrayLike<number>} pixels An array-like object containing pixel values in ARGB format.
+ * @return {Uint8ClampedArray} A typed array where each ARGB pixel is unpacked into four consecutive channels.
  */
 export function packPixels(pixels: ArrayLike<number>): Uint8ClampedArray {
   const count = pixels.length;
@@ -22,12 +23,19 @@ export function packPixels(pixels: ArrayLike<number>): Uint8ClampedArray {
 }
 
 /**
- * Converts an RGB(A) byte buffer into 32-bit ARGB integers.
+ * Unpacks pixel data from a buffer into an array of pixel values.
+ * The number of channels per pixel (bytes per pixel) can be specified or
+ * automatically detected.
+ * Returns either a TypedArray or a plain array based on provided options.
  *
- * @param buffer    ArrayBuffer or TypedArray of raw bytes
- * @param options
- * @returns         Uint32Array of 0xAARRGGBB words when useTArray is true, or number[] when false
- * @template T      Whether to return a TypedArray (true) or number array (false)
+ * @param {BufferInput} buffer The input buffer containing pixel data.
+ * @param {Object} [options] Optional settings for pixel unpacking.
+ * @param {3 | 4} [options.bytesPerPixel] - Number of bytes per pixel (3 for RGB, 4 for RGBA).
+ * If not provided, it will be automatically determined.
+ * @param {T extends boolean} [options.useTArray=false] A flag indicating whether to return a TypedArray
+ * (Uint32Array) instead of a plain array of numbers.
+ * @return {T extends boolean = false ? number[] : Uint32Array} A plain array or TypedArray of unpacked pixel values,
+ * depending on the `useTArray` flag.
  */
 export function unpackPixels<T extends boolean = false>(
   buffer: BufferInput,
@@ -45,7 +53,7 @@ export function unpackPixels<T extends boolean = false>(
 
   const len = bytes.length;
 
-  // Enforce or detect channel count
+  // Enforce or detect bytesPerPixel
   if (bytesPerPixel) {
     if (len % bytesPerPixel !== 0) {
       throw new Error(`Invalid length ${len}: not a multiple of ${bytesPerPixel}`);
@@ -67,10 +75,13 @@ export function unpackPixels<T extends boolean = false>(
     const g = bytes[j + 1]! & 0xff;
     const b = bytes[j + 2]! & 0xff;
     const a = bytesPerPixel === 4 ? bytes[j + 3]! & 0xff : 0xff;
+
     // Build ARGB word, force to unsigned
     result[i] = ((a << 24) | (r << 16) | (g << 8) | b) >>> 0;
   }
 
   // Return a TypedArray or number array based on the useTArray flag
-  return (useTArray ? result : Array.from(result)) as T extends false ? number[] : Uint32Array;
+  return (useTArray ? result : Array.from(result)) as T extends false
+    ? number[]
+    : Uint32Array;
 }
