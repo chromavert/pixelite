@@ -1,51 +1,65 @@
-export enum PixeliteErrorCode {
-  DecodeFailed = 'DECODE_FAILED',
-  NetworkTimeout = 'NETWORK_TIMEOUT',
-  FileReadFailed = 'FILE_READ_FAILED',
-  UnsupportedSource = 'UNSUPPORTED_SOURCE'
+export enum PixeliftErrorCode {
+  FileReadFailed     = 'FILE_READ_FAILED',
+  DecodeFailed       = 'DECODE_FAILED',
+  NetworkError     = 'NETWORK_TIMEOUT',
 }
 
-export class PixeliteError extends Error {
-  public readonly code: PixeliteErrorCode;
+export class PixeliftError extends Error {
+  public readonly code: PixeliftErrorCode;
   public readonly details?: Record<string, any>;
 
   constructor(
-    code: PixeliteErrorCode,
+    code: PixeliftErrorCode,
     message: string,
     details?: Record<string, any>,
     options?: ErrorOptions
   ) {
     super(message, options);
     Object.setPrototypeOf(this, new.target.prototype);
-    this.name = new.target.name;
+    this.name = 'PixeliteError';
     this.code = code;
     this.details = details;
-    if ('captureStackTrace' in Error) {
-      Error.captureStackTrace(this, new.target);
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, PixeliftError);
     }
   }
-}
 
-export class PixeliteDecodeError extends PixeliteError {
-  constructor(message: string, details?: Record<string, any>, options?: ErrorOptions) {
-    super(PixeliteErrorCode.DecodeFailed, message, details, options);
+  static decodeFailed(
+    message: string,
+    details?: Record<string, any>,
+    options?: ErrorOptions
+  ): PixeliftError {
+    return new PixeliftError(
+      PixeliftErrorCode.DecodeFailed,
+      message,
+      details,
+      options
+    );
   }
-}
 
-export class PixeliteNetworkError extends PixeliteError {
-  constructor(message: string, details?: Record<string, any>, options?: ErrorOptions) {
-    super(PixeliteErrorCode.NetworkTimeout, message, details, options);
+  static networkError(
+    message: string,
+    details?: Record<string, any>,
+    options?: ErrorOptions
+  ): PixeliftError {
+    return new PixeliftError(
+      PixeliftErrorCode.NetworkError,
+      message,
+      details,
+      options
+    );
   }
-}
 
-export class PixeliteFileReadError extends PixeliteError {
-  constructor(message: string, details?: Record<string, any>, options?: ErrorOptions) {
-    super(PixeliteErrorCode.FileReadFailed, message, details, options);
-  }
-}
-
-export class PixeliteSourceTypeError extends PixeliteError {
-  constructor(message: string, details?: Record<string, any>, options?: ErrorOptions) {
-    super(PixeliteErrorCode.UnsupportedSource, message, details, options);
+  static fileReadFailed(
+    message: string,
+    details?: Record<string, any>,
+    options?: ErrorOptions
+  ): PixeliftError {
+    return new PixeliftError(
+      PixeliftErrorCode.FileReadFailed,
+      message,
+      details,
+      options
+    );
   }
 }

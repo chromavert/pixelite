@@ -1,11 +1,6 @@
 import fs from 'node:fs/promises';
 import type { ServerInput } from '../types';
-import {
-  PixeliteDecodeError,
-  PixeliteFileReadError,
-  PixeliteNetworkError,
-  PixeliteSourceTypeError
-} from './errors.ts';
+import { PixeliftError } from './errors.ts';
 
 export async function getBuffer(input: ServerInput): Promise<Buffer> {
   if (Buffer.isBuffer(input)) {
@@ -24,15 +19,14 @@ export async function getBuffer(input: ServerInput): Promise<Buffer> {
         return await fs.readFile(input);
       }
     } catch (err: unknown) {
-      // Distinguish network vs. file errors
       if (/^https?:\/\//i.test(input)) {
-        throw new PixeliteNetworkError(
+        throw PixeliftError.networkError(
           `Failed to fetch URL: ${input}`,
           { url: input },
           { cause: err as Error }
         );
       } else {
-        throw new PixeliteFileReadError(
+        throw PixeliftError.fileReadFailed(
           `Failed to read file: ${input}`,
           { path: input },
           { cause: err as Error }
@@ -41,12 +35,11 @@ export async function getBuffer(input: ServerInput): Promise<Buffer> {
     }
   }
 
-  // ArrayBuffer
   if (input instanceof ArrayBuffer) {
     try {
       return Buffer.from(input);
-    } catch (err) {
-      throw new PixeliteDecodeError(
+    } catch (err: unknown) {
+      throw PixeliftError.decodeFailed(
         'ArrayBuffer → Buffer conversion failed',
         { byteLength: input.byteLength },
         { cause: err as Error }
@@ -54,13 +47,12 @@ export async function getBuffer(input: ServerInput): Promise<Buffer> {
     }
   }
 
-  // Any typed‐array view
   if (ArrayBuffer.isView(input)) {
     const view = input as ArrayBufferView;
     try {
       return Buffer.from(view.buffer, view.byteOffset, view.byteLength);
-    } catch (err) {
-      throw new PixeliteDecodeError(
+    } catch (err: unknown) {
+      throw PixeliftError.decodeFailed(
         'TypedArray → Buffer conversion failed',
         { constructor: input.constructor.name, byteLength: view.byteLength },
         { cause: err as Error }
@@ -68,8 +60,7 @@ export async function getBuffer(input: ServerInput): Promise<Buffer> {
     }
   }
 
-  // Unsupported type
-  throw new PixeliteSourceTypeError(
+  throw PixeliftError.decodeFailed(
     `Unsupported image source type: ${(input as any)?.constructor?.name || typeof input}`,
     { receivedType: typeof input }
   );

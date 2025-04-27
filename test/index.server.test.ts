@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, test } from 'vitest';
-import { pixelite } from '../src';
+import { pixelift } from '../src';
 
 describe('Server', () => {
   const formats = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif', 'svg'] as const;
@@ -8,7 +8,7 @@ describe('Server', () => {
   test.each(formats)('should decode a %s image from a URL', async (format) => {
     const url = new URL(`./assets/test.${format}`, import.meta.url);
     const buffer = readFileSync(url);
-    const result = await pixelite(buffer);
+    const result = await pixelift(buffer);
 
     expect(result.width).toBeDefined();
     expect(result.height).toBeDefined();

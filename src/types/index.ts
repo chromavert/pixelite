@@ -4,7 +4,7 @@ export type BinaryData = Buffer | BufferSource;
 
 export type ServerInput = string | BinaryData;
 
-export type PixeliteInput = BrowserInput | ServerInput;
+export type PixeliftInput = BrowserInput | ServerInput;
 
 export interface PixelData {
   data: Uint8ClampedArray;
@@ -13,7 +13,7 @@ export interface PixelData {
   channels: 4;
 }
 
-export interface PixeliteOptions {
+export interface PixeliftOptions {
   width?: number;
   height?: number;
 }

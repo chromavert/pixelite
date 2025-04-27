@@ -1,5 +1,5 @@
 {
-  "name": "@chromavert/pixelite",
+  "name": "pixelift",
   "version": "0.0.1",
   "description": "A universal TypeScript library for image processing that works seamlessly in both Node.js and browser environments with SSR support.",
   "type": "module",
@@ -45,11 +45,11 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/chromavert/pixelite.git"
+    "url": "git+https://github.com/maikeleckelboom/pixelift.git"
   },
-  "homepage": "https://github.com/chromavert/pixelite#readme",
+  "homepage": "https://github.com/maikeleckelboom/pixelift#readme",
   "bugs": {
-    "url": "https://github.com/chromavert/pixelite/issues"
+    "url": "https://github.com/maikeleckelboom/pixelift/issues"
   },
   "devDependencies": {
     "@types/bun": "latest",

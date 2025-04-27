@@ -1,6 +1,6 @@
-import type { PixelData, PixeliteOptions, ServerInput } from '../types';
+import type { PixelData, PixeliftOptions, ServerInput } from '../types';
 import { getBuffer } from '../utils/buffer.ts';
-import { PixeliteDecodeError } from '../utils/errors.ts';
+import { PixeliftError } from '../utils/errors.ts';
 
 let sharpPromise: Promise<typeof import('sharp')> | null = null;
 
@@ -23,7 +23,7 @@ async function getSharp() {
 
 export async function decode(
   input: ServerInput,
-  options: PixeliteOptions = {}
+  options: PixeliftOptions = {}
 ): Promise<PixelData> {
   try {
     const buffer = await getBuffer(input);
@@ -53,7 +53,7 @@ export async function decode(
       channels: info.channels
     };
   } catch (err) {
-    throw new PixeliteDecodeError(
+    throw PixeliftError.decodeFailed(
       `Server error: failed to process image.`,
       { inputType: typeof input },
       { cause: err as Error }
