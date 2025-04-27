@@ -1,6 +1,6 @@
 {
   "name": "pixelift",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "A universal TypeScript library for image processing that works seamlessly in both Node.js and browser environments with SSR support.",
   "type": "module",
   "private": false,
@@ -8,6 +8,7 @@
   "author": "Maikel Eckelboom",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
+  "types": "dist/index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/index.js",
@@ -41,7 +42,8 @@
     "sharp",
     "typescript",
     "node",
-    "browser"
+    "browser",
+    "pixels"
   ],
   "repository": {
     "type": "git",
@@ -52,6 +54,7 @@
     "url": "https://github.com/maikeleckelboom/pixelift/issues"
   },
   "devDependencies": {
+    "typescript": "^5",
     "@types/bun": "latest",
     "@types/sharp": "^0.32.0",
     "@vitest/browser": "^3.1.2",
@@ -61,9 +64,6 @@
     "tsup": "^8.4.0",
     "type-fest": "^4.40.0",
     "vitest": "^3.1.2"
-  },
-  "peerDependencies": {
-    "typescript": "^5"
   },
   "optionalDependencies": {
     "sharp": "^0.34.1"

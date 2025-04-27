@@ -1,5 +1,3 @@
-import type { BinaryData } from '../types';
-
 /**
  * Converts an array of pixel values in ARGB format into a Uint8ClampedArray,
  * where each pixel is expanded into four separate channels: red, green, blue, and alpha.
@@ -28,7 +26,7 @@ export function packPixels(pixels: ArrayLike<number>): Uint8ClampedArray {
  * automatically detected.
  * Returns either a TypedArray or a plain array based on provided options.
  *
- * @param {BinaryData} buffer The input buffer containing pixel data.
+ * @param {Buffer | BufferSource} buffer The input buffer containing pixel data.
  * @param {Object} [options] Optional settings for pixel unpacking.
  * @param {3 | 4} [options.bytesPerPixel] - Number of bytes per pixel (3 for RGB, 4 for RGBA).
  * If not provided, it will be automatically determined.
@@ -38,7 +36,7 @@ export function packPixels(pixels: ArrayLike<number>): Uint8ClampedArray {
  * depending on the `useTArray` flag.
  */
 export function unpackPixels<T extends boolean = false>(
-  buffer: BinaryData,
+  buffer: Buffer | BufferSource,
   options: {
     bytesPerPixel?: 3 | 4;
     useTArray?: T;
@@ -80,6 +78,5 @@ export function unpackPixels<T extends boolean = false>(
     result[i] = ((a << 24) | (r << 16) | (g << 8) | b) >>> 0;
   }
 
-  // Return a TypedArray or number array based on the useTArray flag
   return (useTArray ? result : Array.from(result)) as T extends false ? number[] : Uint32Array;
 }

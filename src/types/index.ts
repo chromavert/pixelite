@@ -1,8 +1,6 @@
 export type BrowserInput = string | URL | File | ImageBitmapSource;
 
-export type BinaryData = Buffer | BufferSource;
-
-export type ServerInput = string | BinaryData;
+export type ServerInput = string | Buffer | BufferSource;
 
 export type PixeliftInput = BrowserInput | ServerInput;
 

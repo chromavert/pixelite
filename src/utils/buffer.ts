@@ -11,11 +11,11 @@ export async function getBuffer(input: ServerInput): Promise<Buffer> {
     try {
       if (/^https?:\/\//i.test(input)) {
         // Remote URL
-        const res = await fetch(input);
+        const res = await fetch(input, { mode: 'cors' });
         const ab = await res.arrayBuffer();
         return Buffer.from(ab);
       } else {
-        // Local filesystem path
+        // Local file
         return await fs.readFile(input);
       }
     } catch (err: unknown) {

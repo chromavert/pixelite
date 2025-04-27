@@ -1,7 +1,7 @@
 export enum PixeliftErrorCode {
   FileReadFailed     = 'FILE_READ_FAILED',
   DecodeFailed       = 'DECODE_FAILED',
-  NetworkError     = 'NETWORK_TIMEOUT',
+  NetworkError     = 'NETWORK_ERROR',
 }
 
 export class PixeliftError extends Error {
