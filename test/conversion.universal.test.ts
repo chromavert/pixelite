@@ -11,14 +11,7 @@ describe('packPixels', () => {
   it('handles multiple pixels', () => {
     const input = [0x11223344, 0xaabbccdd];
     const expected = new Uint8ClampedArray([
-      0x22,
-      0x33,
-      0x44,
-      0x11, // First pixel (ARGB 0x11223344 → RGBA 0x22,0x33,0x44,0x11)
-      0xbb,
-      0xcc,
-      0xdd,
-      0xaa // Second pixel (ARGB 0xaabbccdd → RGBA 0xbb,0xcc,0xdd,0xaa)
+      0x22, 0x33, 0x44, 0x11, 0xbb, 0xcc, 0xdd, 0xaa
     ]);
     expect(packPixels(input)).toEqual(expected);
   });
@@ -29,41 +22,36 @@ describe('packPixels', () => {
   });
 
   it('treats negative integers as unsigned 32-bit values', () => {
-    // -1 in two's complement is 0xFFFFFFFF when converted to unsigned
-    expect(packPixels([-1])).toEqual(
-      // @prettier-ignore
-      new Uint8ClampedArray([255, 255, 255, 255])
-    );
+    expect(packPixels([-1])).toEqual(new Uint8ClampedArray([255, 255, 255, 255]));
   });
 });
 
 describe('unpackPixels', () => {
   it('converts 4-byte RGBA buffers to ARGB integers', () => {
-    // @prettier-ignore
     const input = new Uint8Array([0x11, 0x22, 0x33, 0x44]);
     const expected = new Uint32Array([0x44112233]);
-    expect(unpackPixels(input, { bytesPerPixel: 4 })).toEqual(expected);
+    expect(unpackPixels(input, { bytesPerPixel: 4, useTArray: true })).toEqual(expected);
   });
 
   it('converts 3-byte RGB buffers to ARGB integers with 0xFF alpha', () => {
     const input = new Uint8Array([0x11, 0x22, 0x33]);
     const expected = new Uint32Array([0xff112233]);
-    expect(unpackPixels(input, { bytesPerPixel: 3 })).toEqual(expected);
+    expect(unpackPixels(input, { bytesPerPixel: 3, useTArray: true })).toEqual(expected);
   });
 
   it('auto-detects 4 bytesPerPixel when length is divisible by 4', () => {
-    const input = new Uint8Array(8); // 2 pixels (8 bytes)
-    expect(unpackPixels(input)).toHaveLength(2);
+    const input = new Uint8Array(8);
+    expect(unpackPixels(input, { useTArray: true })).toHaveLength(2);
   });
 
   it('auto-detects 3 bytesPerPixel when length is divisible by 3', () => {
-    const input = new Uint8Array(6); // 2 pixels (6 bytes)
-    expect(unpackPixels(input)).toHaveLength(2);
+    const input = new Uint8Array(6);
+    expect(unpackPixels(input, { useTArray: true })).toHaveLength(2);
   });
 
   it('prefers 4 bytesPerPixel if length is divisible by both 3 and 4', () => {
-    const input = new Uint8Array(12); // Divisible by 3 (4 pixels) and 4 (3 pixels)
-    expect(unpackPixels(input)).toHaveLength(3); // 12 bytes / 4 = 3 pixels
+    const input = new Uint8Array(12);
+    expect(unpackPixels(input, { useTArray: true })).toHaveLength(3);
   });
 
   it('throws error for invalid buffer lengths when bytesPerPixel is unspecified', () => {
@@ -74,12 +62,12 @@ describe('unpackPixels', () => {
   it('accepts ArrayBuffer and other TypedArray types', () => {
     const bytes = [0x11, 0x22, 0x33, 0x44];
     const buffer1 = new Uint8Array(bytes).buffer;
-    expect(unpackPixels(buffer1, { bytesPerPixel: 4 })).toEqual(
+    expect(unpackPixels(buffer1, { bytesPerPixel: 4, useTArray: true })).toEqual(
       new Uint32Array([0x44112233])
     );
 
     const buffer2 = new Uint8ClampedArray(bytes);
-    expect(unpackPixels(buffer2, { bytesPerPixel: 4 })).toEqual(
+    expect(unpackPixels(buffer2, { bytesPerPixel: 4, useTArray: true })).toEqual(
       new Uint32Array([0x44112233])
     );
   });
@@ -96,13 +84,13 @@ describe('Round-trip conversions', () => {
   it('packPixels → unpackPixels returns original ARGB data', () => {
     const original = new Uint32Array([0x12345678, 0x9abcdef0]);
     const packed = packPixels(original);
-    const unpacked = unpackPixels(packed, { bytesPerPixel: 4 });
+    const unpacked = unpackPixels(packed, { bytesPerPixel: 4, useTArray: true });
     expect(unpacked).toEqual(original);
   });
 
   it('unpackPixels → packPixels returns original RGBA data', () => {
     const original = new Uint8ClampedArray([0x11, 0x22, 0x33, 0x44]);
-    const unpacked = unpackPixels(original, { bytesPerPixel: 4 });
+    const unpacked = unpackPixels(original, { bytesPerPixel: 4, useTArray: true });
     const packed = packPixels(unpacked);
     expect(packed).toEqual(original);
   });
@@ -112,25 +100,19 @@ describe('Round-trip conversions', () => {
       255, 0, 0, 255, 0, 255, 0, 255, 0, 0, 255, 255
     ]);
 
-    const unpacked = unpackPixels(originalData);
+    const unpacked = unpackPixels(originalData, { useTArray: true });
     const packed = packPixels(unpacked);
 
     expect(packed).toEqual(originalData);
   });
 
   it('correctly inverts colors while preserving alpha', () => {
-    // Define an opaque color (ARGB): 0xFF112233.
     const originalColor = 0xff112233;
-
-    // Pack into an RGBA buffer
     const pixelBuffer = packPixels([originalColor]);
+    const colors = unpackPixels(pixelBuffer, { useTArray: true });
 
-    // Unpack (auto-detects 4-byte pixels)
-    const colors = unpackPixels(pixelBuffer);
-
-    // Invert RGB channels, keep alpha
     const invertedColors = colors.map((color) => {
-      const a = (color >>> 24) & 0xff; // alpha
+      const a = (color >>> 24) & 0xff;
       const r = (color >>> 16) & 0xff;
       const g = (color >>> 8) & 0xff;
       const b = color & 0xff;
@@ -138,11 +120,32 @@ describe('Round-trip conversions', () => {
       return ((a << 24) | ((0xff - r) << 16) | ((0xff - g) << 8) | (0xff - b)) >>> 0;
     });
 
-    // Re-pack and re-unpack to verify
     const invertedBuffer = packPixels(invertedColors);
-    const [resultColor] = unpackPixels(invertedBuffer);
+    const [resultColor] = unpackPixels(invertedBuffer, { useTArray: true });
 
-    // Expected inverted ARGB: 0xFFEEDDCC
     expect(resultColor! >>> 0).toEqual(0xffeeddcc);
   });
+
+  it('returns number[] when useTArray: false', () => {
+    const input = new Uint8Array([0x11, 0x22, 0x33]);
+    const unpacked = unpackPixels(input, { bytesPerPixel: 3, useTArray: false });
+    assertArrayType(unpacked, 'number[]');
+    expect(unpacked).toEqual([0xff112233]);
+  });
+
+  it('returns Uint32Array when useTArray: true', () => {
+    const input = new Uint8Array([0x11, 0x22, 0x33]);
+    const unpacked = unpackPixels(input, { bytesPerPixel: 3, useTArray: true });
+    assertArrayType(unpacked, 'Uint32Array');
+    expect(unpacked).toEqual(new Uint32Array([0xff112233]));
+  });
 });
+
+function assertArrayType(array: any, type: 'number[]' | 'Uint32Array'): asserts array is number[] | Uint32Array {
+  if (type === 'number[]') {
+    expect(Array.isArray(array)).toBe(true);
+    expect(array.every((item: unknown) => typeof item === 'number')).toBe(true);
+  } else if (type === 'Uint32Array') {
+    expect(array instanceof Uint32Array).toBe(true);
+  }
+}

@@ -29,14 +29,14 @@ export function packPixels(pixels: ArrayLike<number>): Uint8ClampedArray {
  * @returns         Uint32Array of 0xAARRGGBB words when useTArray is true, or number[] when false
  * @template T      Whether to return a TypedArray (true) or number array (false)
  */
-export function unpackPixels<T extends boolean = true>(
+export function unpackPixels<T extends boolean = false>(
   buffer: BufferInput,
   options: {
     bytesPerPixel?: 3 | 4;
     useTArray?: T;
   } = {}
 ): T extends false ? number[] : Uint32Array {
-  let { bytesPerPixel, useTArray = true as T } = options;
+  let { bytesPerPixel, useTArray = false as T } = options;
 
   const bytes =
     buffer instanceof ArrayBuffer
