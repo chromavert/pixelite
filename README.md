@@ -1,3 +1,5 @@
+# Pixelite
+
 ## Overview
 
 **Pixelite** is a universal TypeScript library for image processing that seamlessly decodes images into raw pixel data in both Node.js and browser environments. Leveraging [`sharp`](https://github.com/lovell/sharp) on the server and native browser APIs, Pixelite supports every major image format (JPEG, PNG, GIF, WebP, AVIF, SVG) under a consistent, promise-based API.
@@ -21,7 +23,7 @@ yarn add @chromavert/pixelite
 ```
 
 > **Note**: On the server, `sharp` is an optional dependency. To enable high‑performance decoding in Node.js, install it:
->
+
 ```bash
 npm install sharp
 ```
@@ -74,8 +76,8 @@ You can also decode `File`, `Blob`, `<canvas>`, `ImageBitmap`, etc.
 
 - **`input`**: `Buffer | ArrayBuffer | Uint8Array | string | URL | File | Blob | HTMLImageElement | ImageBitmap | OffscreenCanvas | ...`
 - **`options`**:
-    - `width?: number` – target width (nearest‑neighbor).
-    - `height?: number` – target height.
+  - `width?: number` – target width (nearest‑neighbor).
+  - `height?: number` – target height.
 
 **Returns** a `Promise<PixelData>`:
 
@@ -98,7 +100,7 @@ Throws a `PixeliteError` (or subclass) on failure:
 Converts RGBA (or RGB) byte data into 32‑bit ARGB integers.
 
 ```ts
-const rgba = new Uint8Array([255,0,0,255]);
+const rgba = new Uint8Array([255, 0, 0, 255]);
 const ints = unpackPixels(rgba); // [0xFFFF0000]
 ```
 
@@ -107,7 +109,7 @@ const ints = unpackPixels(rgba); // [0xFFFF0000]
 Turns 32‑bit ARGB integers back into RGBA bytes.
 
 ```ts
-const arr = packPixels([0x80FF00FF]); // Uint8Array [255,0,255,128]
+const arr = packPixels([0x80ff00ff]); // Uint8Array [255,0,255,128]
 ```
 
 ## Examples
@@ -120,7 +122,10 @@ import { pixelite } from '@chromavert/pixelite';
 
 (async () => {
   const buf = fs.readFileSync('photo.jpg');
-  const { data, width, height } = await pixelite(buf, { width: 50, height: 50 });
+  const { data, width, height } = await pixelite(buf, {
+    width: 50,
+    height: 50
+  });
   console.log(`Buffer length: ${data.length}`);
   // e.g., Buffer length: 10000
 })();
@@ -161,4 +166,3 @@ Contributions welcome! Please open an issue or PR on [GitHub](https://github.com
 ## License
 
 MIT © Maikel Eckelboom
-

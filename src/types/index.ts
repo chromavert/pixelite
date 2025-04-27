@@ -11,24 +11,14 @@ export type BrowserInput =
   | Blob
   | ImageData;
 
-export type ServerInput =
-  | string
-  | Buffer
-  | ArrayBuffer
-  | Uint8Array
-  | Uint8ClampedArray
-  | Int8Array
-  | Uint16Array
-  | Int16Array
-  | Uint32Array
-  | Int32Array
-  | Float32Array
-  | Float64Array;
+export type BufferInput = Buffer | BufferSource;
+
+export type ServerInput = string | BufferInput;
 
 export type PixeliteInput = BrowserInput | ServerInput;
 
 export interface PixelData {
-  data: Uint8Array;
+  data: Uint8ClampedArray;
   width: number;
   height: number;
   channels: 4;

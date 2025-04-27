@@ -11,7 +11,7 @@ async function getSharp() {
       throw new Error(
         'Optional dependency "sharp" is not installed. ' +
           'Install it with `npm install sharp` or disable image decoding. ' +
-          `\nOriginal error: ${(err as Error).message}`,
+          `\nOriginal error: ${(err as Error).message}`
       );
     }
   }
@@ -20,31 +20,32 @@ async function getSharp() {
 
 export async function decode(
   input: ServerInput,
-  options: PixeliteOptions = {},
+  options: PixeliteOptions = {}
 ): Promise<PixelData> {
   const buffer = await getBuffer(input);
   const sharpModule = await getSharp();
-
-  let pipeline = sharpModule
-    .default(buffer)
-    .pipelineColorspace('srgb')
-    .ensureAlpha()
-    .unflatten();
+  let pipeline = sharpModule.default(buffer).toColorspace('srgb').ensureAlpha();
 
   if (options.width || options.height) {
     pipeline = pipeline.resize(options.width ?? null, options.height ?? null, {
       fit: 'fill',
       kernel: 'nearest',
+      fastShrinkOnLoad: true
     });
   }
 
-  const image = pipeline.raw({ resolveWithObject: true, channels: 4 });
-  const { data, info } = await image.toBuffer({ resolveWithObject: true });
+  // Explicit 8-bit RGBA raw output
+  const { data, info } = await pipeline
+    .raw({ depth: 'uchar', channels: 4 })
+    .toBuffer({ resolveWithObject: true });
+
+  // Canvas ImageData uses Uint8ClampedArray
+  const clamped = new Uint8ClampedArray(data.buffer, data.byteOffset, data.byteLength);
 
   return {
-    data: new Uint8Array(data.buffer, data.byteOffset, data.byteLength),
+    data: clamped,
     width: info.width,
     height: info.height,
-    channels: info.channels,
+    channels: info.channels
   };
 }

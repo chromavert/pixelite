@@ -11,9 +11,9 @@ export default defineWorkspace([
         '**/*.server.{test,spec}.ts',
         'test/**/*.server.{test,spec}.ts',
         'src/**/*.server.{test,spec}.ts',
-        '**/*.universal.{test,spec}.ts',
-      ],
-    },
+        '**/*.universal.{test,spec}.ts'
+      ]
+    }
   },
   {
     test: {
@@ -22,7 +22,7 @@ export default defineWorkspace([
       include: [
         'test/**/*.browser.{test,spec}.ts',
         'src/**/*.browser.{test,spec}.ts',
-        '**/*.universal.{test,spec}.ts',
+        '**/*.universal.{test,spec}.ts'
       ],
       browser: {
         provider: 'playwright',
@@ -32,9 +32,11 @@ export default defineWorkspace([
         instances: [
           { browser: 'webkit' },
           { browser: 'chromium' },
-          { browser: 'firefox' },
-        ],
-      },
-    },
-  },
+          {
+            browser: 'firefox'
+          }
+        ]
+      }
+    }
+  }
 ]);

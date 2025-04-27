@@ -8,7 +8,7 @@ export default defineConfig(({ watch }) => ({
   sourcemap: true,
   dts: {
     entry: ['src/index.ts'],
-    resolve: true,
+    resolve: true
   },
   external: ['sharp'],
   target: ['esnext'],
@@ -17,5 +17,5 @@ export default defineConfig(({ watch }) => ({
   splitting: false,
   esbuildOptions(options) {
     options.legalComments = 'none';
-  },
+  }
 }));

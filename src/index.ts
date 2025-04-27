@@ -1,23 +1,19 @@
 import type { PixelData, PixeliteInput, PixeliteOptions } from './types';
 import { isRunningInNode } from './utils/env.ts';
-import {
-  isBrowserImageSource,
-  isServerImageSource,
-} from './utils/validation.ts';
+import { isBrowserImageSource, isServerImageSource } from './utils/validation.ts';
 
 async function pixelite(
   input: PixeliteInput,
-  options: PixeliteOptions = {},
+  options: PixeliteOptions = {}
 ): Promise<PixelData> {
   if (isRunningInNode()) {
     const decoder = await import('./decoders/decode.server.ts');
     if (isServerImageSource(input)) {
       return await decoder.decode(input, options);
     }
-    throw new TypeError(
-      `Invalid input type for server environment: ${typeof input}`,
-      { cause: new Error('Invalid input type') },
-    );
+    throw new TypeError(`Invalid input type for server environment: ${typeof input}`, {
+      cause: new Error('Invalid input type')
+    });
   }
 
   if (isBrowserImageSource(input)) {
@@ -25,10 +21,9 @@ async function pixelite(
     return await decoder.decode(input, options);
   }
 
-  throw new TypeError(
-    `Invalid input type for browser environment: ${typeof input}`,
-    { cause: new Error('Invalid input type') },
-  );
+  throw new TypeError(`Invalid input type for browser environment: ${typeof input}`, {
+    cause: new Error('Invalid input type')
+  });
 }
 
 export { pixelite };
@@ -38,5 +33,5 @@ export type {
   PixelData,
   PixeliteInput,
   ServerInput,
-  BrowserInput,
+  BrowserInput
 } from './types/index.ts';

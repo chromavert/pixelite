@@ -2,58 +2,57 @@ import type { BrowserInput, PixelData, PixeliteOptions } from '../types';
 import {
   PixeliteDecodeError,
   PixeliteError,
-  PixeliteSourceTypeError,
+  PixeliteSourceTypeError
 } from '../utils/errors.ts';
 import { isImageBitmapSource, isStringOrURL } from '../utils/validation.ts';
 
 function createCanvasContextFromBitmap(
   bitmap: ImageBitmap,
-  options: PixeliteOptions = {},
+  options: PixeliteOptions = {}
 ): OffscreenCanvasRenderingContext2D {
   const width = options.width ?? bitmap.width;
   const height = options.height ?? bitmap.height;
 
   const canvas = new OffscreenCanvas(width, height);
-  const context = canvas.getContext('2d');
+  const context = canvas.getContext('2d', {
+    alpha: true,
+    colorSpace: 'srgb'
+  });
 
   if (!context) {
     throw new PixeliteDecodeError('Failed to create 2D rendering context');
   }
 
   context.imageSmoothingEnabled = false;
+  context.imageSmoothingQuality = 'low';
   context.drawImage(bitmap, 0, 0, width, height);
   return context;
 }
 
 function extractPixelDataFromContext(
-  context: OffscreenCanvasRenderingContext2D,
+  context: OffscreenCanvasRenderingContext2D
 ): PixelData {
   const { width, height } = context.canvas;
-  const imageData = context.getImageData(0, 0, width, height);
-
-  const pixelBuffer = new Uint8Array(
-    imageData.data.buffer,
-    imageData.data.byteOffset,
-    imageData.data.byteLength,
-  );
+  const imageData = context.getImageData(0, 0, width, height, {
+    colorSpace: 'srgb'
+  });
 
   return {
-    data: pixelBuffer,
+    data: imageData.data,
     width,
     height,
-    channels: 4,
+    channels: 4
   };
 }
 
 function loadImageFromURL(sourceURL: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const image = new Image();
+    image.crossOrigin = 'anonymous';
 
     image.onload = () => resolve(image);
     image.onerror = () => {
-      reject(
-        new PixeliteDecodeError(`Failed to load image from URL: ${sourceURL}`),
-      );
+      reject(new PixeliteDecodeError(`Failed to load image from URL: ${sourceURL}`));
     };
 
     image.src = sourceURL;
@@ -62,22 +61,22 @@ function loadImageFromURL(sourceURL: string): Promise<HTMLImageElement> {
 
 async function convertSVGToBitmap(
   svgBlob: Blob,
-  sourceURL: string,
+  sourceURL: string
 ): Promise<ImageBitmap> {
   const objectURL = URL.createObjectURL(svgBlob);
-
   try {
     const image = await loadImageFromURL(objectURL);
     const canvas = new OffscreenCanvas(image.width, image.height);
     const context = canvas.getContext('2d')!;
     context.imageSmoothingEnabled = false;
+    context.imageSmoothingQuality = 'low';
     context.drawImage(image, 0, 0);
     return await createImageBitmap(canvas);
   } catch (error) {
     throw new PixeliteDecodeError(
       `Failed to process SVG image from ${sourceURL}`,
       { sourceURL },
-      { cause: error as Error },
+      { cause: error as Error }
     );
   } finally {
     URL.revokeObjectURL(objectURL);
@@ -92,7 +91,7 @@ async function fetchAndDecodeImage(source: string | URL): Promise<ImageBitmap> {
     throw new PixeliteDecodeError(
       `Image fetch failed: ${response.statusText}`,
       { sourceURL },
-      { cause: new Error(`HTTP ${response.status}`) },
+      { cause: new Error(`HTTP ${response.status}`) }
     );
   }
 
@@ -108,28 +107,22 @@ async function fetchAndDecodeImage(source: string | URL): Promise<ImageBitmap> {
     throw new PixeliteDecodeError(
       `Image decoding failed for ${sourceURL}`,
       { sourceURL },
-      { cause: error as Error },
+      { cause: error  }
     );
   }
 }
 
-async function normalizeImageSource(
-  source: BrowserInput,
-): Promise<ImageBitmap> {
+async function normalizeImageSource(source: BrowserInput): Promise<ImageBitmap> {
   if (isStringOrURL(source)) {
     return fetchAndDecodeImage(source);
   }
 
-  if (
-    source instanceof File ||
-    source instanceof Blob ||
-    isImageBitmapSource(source)
-  ) {
+  if (source instanceof File || source instanceof Blob || isImageBitmapSource(source)) {
     return createImageBitmap(source);
   }
 
   throw new PixeliteSourceTypeError(
-    `Unsupported image source type: ${Object.prototype.toString.call(source)}`,
+    `Unsupported image source type: ${Object.prototype.toString.call(source)}`
   );
 }
 
@@ -138,7 +131,7 @@ async function normalizeImageSource(
  */
 export async function decode(
   imageSource: BrowserInput,
-  options: PixeliteOptions = {},
+  options: PixeliteOptions = {}
 ): Promise<PixelData> {
   try {
     const imageBitmap = await normalizeImageSource(imageSource);
@@ -150,14 +143,8 @@ export async function decode(
     }
     throw new PixeliteDecodeError(
       `Image processing failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      {
-        sourceType: typeof imageSource,
-        sourceValue:
-          imageSource instanceof URL
-            ? imageSource.toString()
-            : String(imageSource),
-      },
-      { cause: error as Error },
+      {},
+      { cause: error }
     );
   } finally {
   }
